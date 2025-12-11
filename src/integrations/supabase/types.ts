@@ -14,7 +14,159 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      diagnostics: {
+        Row: {
+          ai_analysis: string | null
+          ai_recommendations: string | null
+          business_model_score: number | null
+          company_name: string
+          created_at: string
+          finance_score: number | null
+          id: string
+          industry: string
+          legal_score: number | null
+          market_score: number | null
+          marketing_score: number | null
+          operations_score: number | null
+          overall_score: number | null
+          product_score: number | null
+          stage: string
+          status: string
+          team_score: number | null
+          team_size: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          ai_recommendations?: string | null
+          business_model_score?: number | null
+          company_name: string
+          created_at?: string
+          finance_score?: number | null
+          id?: string
+          industry: string
+          legal_score?: number | null
+          market_score?: number | null
+          marketing_score?: number | null
+          operations_score?: number | null
+          overall_score?: number | null
+          product_score?: number | null
+          stage: string
+          status?: string
+          team_score?: number | null
+          team_size: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          ai_recommendations?: string | null
+          business_model_score?: number | null
+          company_name?: string
+          created_at?: string
+          finance_score?: number | null
+          id?: string
+          industry?: string
+          legal_score?: number | null
+          market_score?: number | null
+          marketing_score?: number | null
+          operations_score?: number | null
+          overall_score?: number | null
+          product_score?: number | null
+          stage?: string
+          status?: string
+          team_score?: number | null
+          team_size?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      idea_validations: {
+        Row: {
+          ai_analysis: string | null
+          ai_recommendations: string | null
+          created_at: string
+          feasibility_score: number | null
+          id: string
+          idea_description: string
+          idea_title: string
+          innovation_score: number | null
+          market_potential_score: number | null
+          overall_score: number | null
+          problem_solved: string
+          status: string
+          target_market: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          ai_recommendations?: string | null
+          created_at?: string
+          feasibility_score?: number | null
+          id?: string
+          idea_description: string
+          idea_title: string
+          innovation_score?: number | null
+          market_potential_score?: number | null
+          overall_score?: number | null
+          problem_solved: string
+          status?: string
+          target_market: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          ai_recommendations?: string | null
+          created_at?: string
+          feasibility_score?: number | null
+          id?: string
+          idea_description?: string
+          idea_title?: string
+          innovation_score?: number | null
+          market_potential_score?: number | null
+          overall_score?: number | null
+          problem_solved?: string
+          status?: string
+          target_market?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
