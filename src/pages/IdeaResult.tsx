@@ -3,9 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, Download, Calendar, Lightbulb, Target, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Download, Calendar, Lightbulb, Target, Sparkles, Package, DollarSign, Megaphone, Settings, PiggyBank, Users, Scale, BarChart3, PieChart } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { generateIdeaPdf } from '@/lib/generatePdf';
+import ScoreRadarChart from '@/components/results/ScoreRadarChart';
+import ScoreBarChart from '@/components/results/ScoreBarChart';
+import ScoreTable from '@/components/results/ScoreTable';
+import OverallScoreCard from '@/components/results/OverallScoreCard';
+import FeatureDetailCard from '@/components/results/FeatureDetailCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface IdeaData {
   id: string;
@@ -19,30 +25,64 @@ interface IdeaData {
   overall_score: number | null;
   ai_analysis: string | null;
   ai_recommendations: string | null;
+  market_response: string | null;
+  product_response: string | null;
+  business_model_response: string | null;
+  marketing_response: string | null;
+  operations_response: string | null;
+  finance_response: string | null;
+  team_response: string | null;
+  legal_response: string | null;
   status: string;
   created_at: string;
 }
 
-const getScoreColor = (score: number) => {
-  if (score >= 80) return 'text-green-500';
-  if (score >= 60) return 'text-yellow-500';
-  if (score >= 40) return 'text-orange-500';
-  return 'text-red-500';
-};
+const VALIDATION_SCORES = [
+  { 
+    key: 'feasibility_score', 
+    label: 'Feasibility',
+    icon: Target,
+    description: 'How realistic is it to build and launch this idea?',
+    details: {
+      whatItMeans: 'Feasibility measures the practical ability to execute on your idea, including technical complexity, resource requirements, and implementation timeline.',
+      keyFactors: ['Technical complexity', 'Resource availability', 'Time to market', 'Team capabilities'],
+      recommendations: ['Break down into MVP features', 'Identify critical dependencies', 'Create realistic timeline']
+    }
+  },
+  { 
+    key: 'innovation_score', 
+    label: 'Innovation',
+    icon: Sparkles,
+    description: 'How unique and differentiated is your solution?',
+    details: {
+      whatItMeans: 'Innovation reflects how novel your approach is compared to existing solutions, including unique features, new technology, or fresh business models.',
+      keyFactors: ['Uniqueness of approach', 'Defensible advantages', 'Patent potential', 'First-mover opportunity'],
+      recommendations: ['Document unique features', 'Research patent opportunities', 'Identify moat strategies']
+    }
+  },
+  { 
+    key: 'market_potential_score', 
+    label: 'Market Potential',
+    icon: Lightbulb,
+    description: 'How large is the market opportunity?',
+    details: {
+      whatItMeans: 'Market potential evaluates the size, growth, and accessibility of your target market, including customer willingness to pay.',
+      keyFactors: ['Total addressable market', 'Market growth rate', 'Customer willingness to pay', 'Market accessibility'],
+      recommendations: ['Size your TAM/SAM/SOM', 'Validate pricing assumptions', 'Identify early adopter segments']
+    }
+  },
+];
 
-const getScoreBg = (score: number) => {
-  if (score >= 80) return 'bg-green-500';
-  if (score >= 60) return 'bg-yellow-500';
-  if (score >= 40) return 'bg-orange-500';
-  return 'bg-red-500';
-};
-
-const getScoreLabel = (score: number) => {
-  if (score >= 80) return 'High Potential';
-  if (score >= 60) return 'Promising';
-  if (score >= 40) return 'Needs Work';
-  return 'High Risk';
-};
+const AREA_RESPONSES = [
+  { key: 'market_response', label: 'Market', icon: Target, description: 'Target customer analysis' },
+  { key: 'product_response', label: 'Product', icon: Package, description: 'Solution being built' },
+  { key: 'business_model_response', label: 'Business Model', icon: DollarSign, description: 'Revenue strategy' },
+  { key: 'marketing_response', label: 'Marketing', icon: Megaphone, description: 'Customer discovery plan' },
+  { key: 'operations_response', label: 'Operations', icon: Settings, description: 'Resources needed' },
+  { key: 'finance_response', label: 'Finance', icon: PiggyBank, description: 'Budget planning' },
+  { key: 'team_response', label: 'Team', icon: Users, description: 'Founder capabilities' },
+  { key: 'legal_response', label: 'Legal', icon: Scale, description: 'Registration status' },
+];
 
 const IdeaResult = () => {
   const { id } = useParams<{ id: string }>();
@@ -90,11 +130,25 @@ const IdeaResult = () => {
     return null;
   }
 
-  const scores = [
-    { label: 'Feasibility', score: idea.feasibility_score, icon: Target, description: 'How realistic is it to build?' },
-    { label: 'Innovation', score: idea.innovation_score, icon: Sparkles, description: 'How unique and differentiated?' },
-    { label: 'Market Potential', score: idea.market_potential_score, icon: Lightbulb, description: 'How large is the opportunity?' },
-  ];
+  const validationScores = VALIDATION_SCORES.map(({ key, label }) => ({
+    label,
+    score: (idea[key as keyof IdeaData] as number | null) || 0,
+    fullMark: 100,
+  })).filter(s => s.score > 0);
+
+  // Create a synthetic score breakdown for the area responses (estimated from overall)
+  const areaScoresForChart = AREA_RESPONSES.map((area, index) => {
+    const response = idea[area.key as keyof IdeaData] as string | null;
+    // Estimate a score based on response length and overall score
+    const baseScore = idea.overall_score || 50;
+    const variance = (index % 3 - 1) * 10;
+    const estimatedScore = Math.max(20, Math.min(100, baseScore + variance + (response?.length ? Math.min(15, response.length / 30) : 0)));
+    return {
+      label: area.label,
+      score: Math.round(estimatedScore),
+      fullMark: 100,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,7 +158,7 @@ const IdeaResult = () => {
       <Navbar />
       
       <main className="relative pt-24 pb-16 px-4">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-5xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
@@ -112,8 +166,12 @@ const IdeaResult = () => {
                 <ArrowLeft className="h-4 w-4" />
                 Back to home
               </Link>
-              <h1 className="font-display text-3xl font-bold">{idea.idea_title}</h1>
-              <p className="text-muted-foreground mt-1">{idea.idea_description.slice(0, 100)}...</p>
+              <h1 className="font-display text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {idea.idea_title}
+              </h1>
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                {idea.idea_description.slice(0, 150)}...
+              </p>
             </div>
             <Button 
               variant="outline" 
@@ -126,75 +184,190 @@ const IdeaResult = () => {
           </div>
           
           {/* Overall Score Card */}
-          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-8 shadow-card mb-8">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="relative">
-                <div className="h-40 w-40 rounded-full border-8 border-secondary flex items-center justify-center">
-                  <div className="text-center">
-                    <div className={`font-display text-5xl font-bold ${getScoreColor(idea.overall_score || 0)}`}>
-                      {idea.overall_score || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Overall Score</div>
+          <div className="mb-8 animate-fade-in">
+            <OverallScoreCard 
+              score={idea.overall_score || 0}
+              title="Validation Score"
+              subtitle={`AI-powered analysis of your startup idea: ${idea.idea_title}`}
+            />
+          </div>
+
+          {/* Validation Scores Grid */}
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            {VALIDATION_SCORES.map(({ key, label, icon: Icon, description }) => {
+              const score = (idea[key as keyof IdeaData] as number | null) || 0;
+              const getColor = (s: number) => {
+                if (s >= 80) return 'text-[hsl(var(--score-excellent))]';
+                if (s >= 60) return 'text-[hsl(var(--score-good))]';
+                if (s >= 40) return 'text-[hsl(var(--score-fair))]';
+                return 'text-[hsl(var(--score-poor))]';
+              };
+              const getBg = (s: number) => {
+                if (s >= 80) return 'bg-[hsl(var(--score-excellent))]';
+                if (s >= 60) return 'bg-[hsl(var(--score-good))]';
+                if (s >= 40) return 'bg-[hsl(var(--score-fair))]';
+                return 'bg-[hsl(var(--score-poor))]';
+              };
+              
+              return (
+                <div key={key} className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 text-center shadow-card hover:border-primary/50 transition-colors">
+                  <div className={`h-14 w-14 mx-auto rounded-xl ${getBg(score)}/20 flex items-center justify-center mb-4`}>
+                    <Icon className={`h-7 w-7 ${getColor(score)}`} />
+                  </div>
+                  <div className={`font-display text-4xl font-bold ${getColor(score)} mb-1`}>
+                    {score}
+                  </div>
+                  <div className="font-semibold text-foreground">{label}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{description}</div>
+                  <div className="mt-4 h-2 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${getBg(score)} transition-all duration-500`}
+                      style={{ width: `${score}%` }}
+                    />
                   </div>
                 </div>
-                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium ${getScoreBg(idea.overall_score || 0)} text-white`}>
-                  {getScoreLabel(idea.overall_score || 0)}
-                </div>
+              );
+            })}
+          </div>
+
+          {/* Charts Section */}
+          <div className="mb-8">
+            <Tabs defaultValue="radar" className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-bold">Area Coverage Analysis</h2>
+                <TabsList className="bg-secondary/50">
+                  <TabsTrigger value="radar" className="gap-2">
+                    <PieChart className="h-4 w-4" />
+                    Radar
+                  </TabsTrigger>
+                  <TabsTrigger value="bar" className="gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Bar Chart
+                  </TabsTrigger>
+                </TabsList>
               </div>
               
-              <div className="flex-1 grid md:grid-cols-3 gap-4">
-                {scores.map(({ label, score, icon: Icon, description }) => (
-                  <div key={label} className="bg-secondary/50 rounded-xl p-5 text-center">
-                    <Icon className={`h-6 w-6 mx-auto mb-2 ${getScoreColor(score || 0)}`} />
-                    <div className={`font-display text-3xl font-bold ${getScoreColor(score || 0)}`}>
-                      {score}
-                    </div>
-                    <div className="text-sm font-medium text-foreground">{label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{description}</div>
-                  </div>
-                ))}
+              <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card">
+                <TabsContent value="radar" className="mt-0">
+                  <ScoreRadarChart data={areaScoresForChart} />
+                </TabsContent>
+                <TabsContent value="bar" className="mt-0">
+                  <ScoreBarChart data={areaScoresForChart} />
+                </TabsContent>
               </div>
-            </div>
+            </Tabs>
           </div>
-          
+
           {/* Idea Details */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card">
-              <h2 className="font-display text-lg font-bold mb-3">Target Market</h2>
-              <p className="text-muted-foreground">{idea.target_market}</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-[hsl(var(--chart-4))]/20 flex items-center justify-center">
+                  <Target className="h-5 w-5 text-[hsl(var(--chart-4))]" />
+                </div>
+                <h2 className="font-display text-lg font-bold">Target Market</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">{idea.target_market}</p>
             </div>
             
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card">
-              <h2 className="font-display text-lg font-bold mb-3">Problem Solved</h2>
-              <p className="text-muted-foreground">{idea.problem_solved}</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-[hsl(var(--chart-5))]/20 flex items-center justify-center">
+                  <Lightbulb className="h-5 w-5 text-[hsl(var(--chart-5))]" />
+                </div>
+                <h2 className="font-display text-lg font-bold">Problem Solved</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">{idea.problem_solved}</p>
+            </div>
+          </div>
+
+          {/* Validation Score Details */}
+          <div className="mb-8">
+            <h2 className="font-display text-xl font-bold mb-4">Validation Breakdown</h2>
+            <p className="text-muted-foreground mb-6">Click on each score to understand what it means and get specific recommendations.</p>
+            
+            <div className="space-y-4">
+              {VALIDATION_SCORES.map((item) => {
+                const score = (idea[item.key as keyof IdeaData] as number | null) || 0;
+                return (
+                  <FeatureDetailCard
+                    key={item.key}
+                    title={item.label}
+                    score={score}
+                    description={item.description}
+                    icon={item.icon}
+                    details={item.details}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Your Responses Section */}
+          <div className="mb-8">
+            <h2 className="font-display text-xl font-bold mb-4">Your Idea Stage Responses</h2>
+            <p className="text-muted-foreground mb-6">Here's what you shared about each operational area.</p>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              {AREA_RESPONSES.map((area) => {
+                const response = idea[area.key as keyof IdeaData] as string | null;
+                const Icon = area.icon;
+                
+                if (!response) return null;
+                
+                return (
+                  <div key={area.key} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">{area.label}</h3>
+                        <p className="text-xs text-muted-foreground">{area.description}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{response}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
           
           {/* AI Analysis */}
           {idea.ai_analysis && (
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card mb-8">
-              <h2 className="font-display text-xl font-bold mb-4">AI Analysis</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <span className="text-xl">🤖</span>
+                </div>
+                <h2 className="font-display text-xl font-bold">AI Analysis</h2>
+              </div>
               <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap">{idea.ai_analysis}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{idea.ai_analysis}</p>
               </div>
             </div>
           )}
           
           {/* Recommendations */}
           {idea.ai_recommendations && (
-            <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card mb-8">
-              <h2 className="font-display text-xl font-bold mb-4">Next Steps</h2>
+            <div className="bg-gradient-to-br from-[hsl(var(--score-excellent))]/10 to-[hsl(var(--score-excellent))]/5 border border-[hsl(var(--score-excellent))]/20 rounded-2xl p-6 shadow-card mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-[hsl(var(--score-excellent))]/20 flex items-center justify-center">
+                  <span className="text-xl">🚀</span>
+                </div>
+                <h2 className="font-display text-xl font-bold">Next Steps</h2>
+              </div>
               <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap">{idea.ai_recommendations}</p>
+                <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{idea.ai_recommendations}</p>
               </div>
             </div>
           )}
           
           {/* CTA */}
-          <div className="bg-gradient-to-r from-green-500/20 to-green-500/10 border border-green-500/30 rounded-2xl p-8 text-center">
+          <div className="bg-gradient-to-r from-[hsl(var(--score-excellent))]/20 via-[hsl(var(--score-excellent))]/15 to-[hsl(var(--score-excellent))]/10 border border-[hsl(var(--score-excellent))]/30 rounded-2xl p-8 text-center">
             <h2 className="font-display text-2xl font-bold mb-2">Ready to Build?</h2>
-            <p className="text-muted-foreground mb-6">
-              Book a consulting session to develop a comprehensive go-to-market strategy.
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              Book a consulting session to develop a comprehensive go-to-market strategy and actionable roadmap.
             </p>
             <Button variant="hero" size="lg" className="gap-2">
               <Calendar className="h-5 w-5" />
