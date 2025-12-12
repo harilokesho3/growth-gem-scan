@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Download, Calendar, Lightbulb, Target, Sparkles } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { generateIdeaPdf } from '@/lib/generatePdf';
 
 interface IdeaData {
   id: string;
@@ -114,7 +115,11 @@ const IdeaResult = () => {
               <h1 className="font-display text-3xl font-bold">{idea.idea_title}</h1>
               <p className="text-muted-foreground mt-1">{idea.idea_description.slice(0, 100)}...</p>
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => generateIdeaPdf(idea)}
+            >
               <Download className="h-4 w-4" />
               Download PDF
             </Button>
