@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Download, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-
+import { generateDiagnosticPdf } from '@/lib/generatePdf';
 interface DiagnosticData {
   id: string;
   company_name: string;
@@ -128,7 +128,11 @@ const DiagnosticResult = () => {
                 {diagnostic.industry} • {diagnostic.stage} • {diagnostic.team_size}
               </p>
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => generateDiagnosticPdf(diagnostic)}
+            >
               <Download className="h-4 w-4" />
               Download PDF
             </Button>
