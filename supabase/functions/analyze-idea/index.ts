@@ -12,13 +12,29 @@ serve(async (req) => {
   }
 
   try {
-    const { ideaId, ideaTitle, ideaDescription, targetMarket, problemSolved } = await req.json();
+    const { ideaId, ideaTitle, ideaDescription, targetMarket, problemSolved, areaResponses } = await req.json();
     
     console.log("Analyzing idea:", ideaTitle);
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Build operational areas section if provided
+    let operationalAreasSection = '';
+    if (areaResponses) {
+      operationalAreasSection = `
+Idea Stage Details:
+- Market (Target Customer): ${areaResponses.market || 'Not provided'}
+- Product (Solution): ${areaResponses.product || 'Not provided'}
+- Business Model (Revenue): ${areaResponses.businessModel || 'Not provided'}
+- Marketing (Customer Acquisition): ${areaResponses.marketing || 'Not provided'}
+- Operations (Resources/Tools): ${areaResponses.operations || 'Not provided'}
+- Finance (3-Month Budget): ${areaResponses.finance || 'Not provided'}
+- Team (Founders & Skills): ${areaResponses.team || 'Not provided'}
+- Legal (Registration Status): ${areaResponses.legal || 'Not provided'}
+`;
     }
 
     const prompt = `You are a startup idea validation expert. Analyze this business idea and provide scores and recommendations.
@@ -28,11 +44,18 @@ Idea Details:
 - Description: ${ideaDescription}
 - Target Market: ${targetMarket}
 - Problem Solved: ${problemSolved}
-
+${operationalAreasSection}
 Evaluate the idea on:
 1. Feasibility (0-100): How realistic is it to build and launch this?
 2. Innovation (0-100): How unique and differentiated is this idea?
 3. Market Potential (0-100): How large and accessible is the target market?
+
+Consider the operational area responses when evaluating:
+- Market & Product responses inform feasibility and market potential
+- Business Model & Finance responses inform feasibility
+- Marketing & Operations responses inform feasibility
+- Team responses inform overall viability
+- Legal responses inform feasibility and risks
 
 Provide:
 - Scores for each dimension
@@ -49,7 +72,7 @@ Respond in JSON format with this structure:
     "marketPotential": number,
     "overall": number
   },
-  "analysis": "comprehensive analysis text covering strengths, opportunities, risks, and challenges",
+  "analysis": "comprehensive analysis text covering strengths, opportunities, risks, and challenges based on all provided information",
   "recommendations": "specific next steps to validate and develop the idea"
 }`;
 

@@ -7,9 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Lightbulb, Loader2, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Loader2, ArrowRight, Target, Package, DollarSign, Megaphone, Settings, PiggyBank, Users, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+
+const operationalAreas = [
+  { key: 'market', label: 'Market', icon: Target, placeholder: 'Who is your target customer? Describe their demographics, behaviors, and pain points.' },
+  { key: 'product', label: 'Product', icon: Package, placeholder: 'What solution are you planning to build? Describe the core features and value proposition.' },
+  { key: 'businessModel', label: 'Business Model', icon: DollarSign, placeholder: 'How will you make money? Describe your revenue streams and pricing strategy.' },
+  { key: 'marketing', label: 'Marketing', icon: Megaphone, placeholder: 'How will customers discover your solution? What channels will you use?' },
+  { key: 'operations', label: 'Operations', icon: Settings, placeholder: 'What resources/tools do you need to start? Describe your operational requirements.' },
+  { key: 'finance', label: 'Finance', icon: PiggyBank, placeholder: 'What is your estimated budget for the first 3 months? Include key expenses.' },
+  { key: 'team', label: 'Team', icon: Users, placeholder: 'Who are the founders & what skills do they bring? Describe your team composition.' },
+  { key: 'legal', label: 'Legal', icon: Scale, placeholder: 'Is your startup registered or in process? Describe your legal status and requirements.' },
+];
 
 const IdeaValidationPage = () => {
   const { user, loading: authLoading } = useAuth();
@@ -21,6 +32,18 @@ const IdeaValidationPage = () => {
   const [ideaDescription, setIdeaDescription] = useState('');
   const [targetMarket, setTargetMarket] = useState('');
   const [problemSolved, setProblemSolved] = useState('');
+  
+  // Operational area responses
+  const [areaResponses, setAreaResponses] = useState<Record<string, string>>({
+    market: '',
+    product: '',
+    businessModel: '',
+    marketing: '',
+    operations: '',
+    finance: '',
+    team: '',
+    legal: '',
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -28,7 +51,12 @@ const IdeaValidationPage = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const isFormComplete = ideaTitle && ideaDescription && targetMarket && problemSolved;
+  const handleAreaChange = (key: string, value: string) => {
+    setAreaResponses(prev => ({ ...prev, [key]: value }));
+  };
+
+  const isFormComplete = ideaTitle && ideaDescription && targetMarket && problemSolved && 
+    Object.values(areaResponses).every(v => v.trim().length > 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +74,14 @@ const IdeaValidationPage = () => {
           idea_description: ideaDescription,
           target_market: targetMarket,
           problem_solved: problemSolved,
+          market_response: areaResponses.market,
+          product_response: areaResponses.product,
+          business_model_response: areaResponses.businessModel,
+          marketing_response: areaResponses.marketing,
+          operations_response: areaResponses.operations,
+          finance_response: areaResponses.finance,
+          team_response: areaResponses.team,
+          legal_response: areaResponses.legal,
           status: 'analyzing',
         })
         .select()
@@ -66,6 +102,7 @@ const IdeaValidationPage = () => {
           ideaDescription,
           targetMarket,
           problemSolved,
+          areaResponses,
         },
       });
 
@@ -139,55 +176,87 @@ const IdeaValidationPage = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="ideaTitle">Idea Title</Label>
-                <Input
-                  id="ideaTitle"
-                  placeholder="e.g., AI-Powered Personal Finance Coach"
-                  value={ideaTitle}
-                  onChange={(e) => setIdeaTitle(e.target.value)}
-                  maxLength={100}
-                />
-                <p className="text-xs text-muted-foreground">{ideaTitle.length}/100 characters</p>
+              {/* Core Idea Info */}
+              <div className="space-y-4">
+                <h2 className="font-semibold text-lg border-b border-border pb-2">Your Idea</h2>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ideaTitle">Idea Title</Label>
+                  <Input
+                    id="ideaTitle"
+                    placeholder="e.g., AI-Powered Personal Finance Coach"
+                    value={ideaTitle}
+                    onChange={(e) => setIdeaTitle(e.target.value)}
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-muted-foreground">{ideaTitle.length}/100 characters</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ideaDescription">Describe Your Idea</Label>
+                  <Textarea
+                    id="ideaDescription"
+                    placeholder="Explain your idea in detail. What is it? How does it work? What makes it unique?"
+                    value={ideaDescription}
+                    onChange={(e) => setIdeaDescription(e.target.value)}
+                    rows={4}
+                    maxLength={1000}
+                  />
+                  <p className="text-xs text-muted-foreground">{ideaDescription.length}/1000 characters</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="targetMarket">Target Market</Label>
+                  <Textarea
+                    id="targetMarket"
+                    placeholder="Who is your target customer? What are their demographics, behaviors, and pain points?"
+                    value={targetMarket}
+                    onChange={(e) => setTargetMarket(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground">{targetMarket.length}/500 characters</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="problemSolved">Problem Solved</Label>
+                  <Textarea
+                    id="problemSolved"
+                    placeholder="What problem does your idea solve? How are people currently solving this problem?"
+                    value={problemSolved}
+                    onChange={(e) => setProblemSolved(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground">{problemSolved.length}/500 characters</p>
+                </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="ideaDescription">Describe Your Idea</Label>
-                <Textarea
-                  id="ideaDescription"
-                  placeholder="Explain your idea in detail. What is it? How does it work? What makes it unique?"
-                  value={ideaDescription}
-                  onChange={(e) => setIdeaDescription(e.target.value)}
-                  rows={4}
-                  maxLength={1000}
-                />
-                <p className="text-xs text-muted-foreground">{ideaDescription.length}/1000 characters</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetMarket">Target Market</Label>
-                <Textarea
-                  id="targetMarket"
-                  placeholder="Who is your target customer? What are their demographics, behaviors, and pain points?"
-                  value={targetMarket}
-                  onChange={(e) => setTargetMarket(e.target.value)}
-                  rows={3}
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground">{targetMarket.length}/500 characters</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="problemSolved">Problem Solved</Label>
-                <Textarea
-                  id="problemSolved"
-                  placeholder="What problem does your idea solve? How are people currently solving this problem?"
-                  value={problemSolved}
-                  onChange={(e) => setProblemSolved(e.target.value)}
-                  rows={3}
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground">{problemSolved.length}/500 characters</p>
+              {/* Operational Areas */}
+              <div className="space-y-4">
+                <h2 className="font-semibold text-lg border-b border-border pb-2">Idea Stage Details</h2>
+                <p className="text-sm text-muted-foreground">Answer these questions to help our AI provide more accurate validation.</p>
+                
+                {operationalAreas.map((area) => {
+                  const Icon = area.icon;
+                  return (
+                    <div key={area.key} className="space-y-2">
+                      <Label htmlFor={area.key} className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-primary" />
+                        {area.label}
+                      </Label>
+                      <Textarea
+                        id={area.key}
+                        placeholder={area.placeholder}
+                        value={areaResponses[area.key]}
+                        onChange={(e) => handleAreaChange(area.key, e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                      />
+                      <p className="text-xs text-muted-foreground">{areaResponses[area.key].length}/500 characters</p>
+                    </div>
+                  );
+                })}
               </div>
               
               <div className="flex justify-between pt-6 border-t border-border">

@@ -87,51 +87,75 @@ export type Database = {
         Row: {
           ai_analysis: string | null
           ai_recommendations: string | null
+          business_model_response: string | null
           created_at: string
           feasibility_score: number | null
+          finance_response: string | null
           id: string
           idea_description: string
           idea_title: string
           innovation_score: number | null
+          legal_response: string | null
           market_potential_score: number | null
+          market_response: string | null
+          marketing_response: string | null
+          operations_response: string | null
           overall_score: number | null
           problem_solved: string
+          product_response: string | null
           status: string
           target_market: string
+          team_response: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           ai_analysis?: string | null
           ai_recommendations?: string | null
+          business_model_response?: string | null
           created_at?: string
           feasibility_score?: number | null
+          finance_response?: string | null
           id?: string
           idea_description: string
           idea_title: string
           innovation_score?: number | null
+          legal_response?: string | null
           market_potential_score?: number | null
+          market_response?: string | null
+          marketing_response?: string | null
+          operations_response?: string | null
           overall_score?: number | null
           problem_solved: string
+          product_response?: string | null
           status?: string
           target_market: string
+          team_response?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           ai_analysis?: string | null
           ai_recommendations?: string | null
+          business_model_response?: string | null
           created_at?: string
           feasibility_score?: number | null
+          finance_response?: string | null
           id?: string
           idea_description?: string
           idea_title?: string
           innovation_score?: number | null
+          legal_response?: string | null
           market_potential_score?: number | null
+          market_response?: string | null
+          marketing_response?: string | null
+          operations_response?: string | null
           overall_score?: number | null
           problem_solved?: string
+          product_response?: string | null
           status?: string
           target_market?: string
+          team_response?: string | null
           updated_at?: string
           user_id?: string
         }
