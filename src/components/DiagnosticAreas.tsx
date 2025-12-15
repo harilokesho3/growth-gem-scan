@@ -13,49 +13,49 @@ const areas = [
   {
     icon: Target,
     title: "Market",
-    description: "Analyze market size, trends, competition, and your positioning",
+    description: "Understand whether your target customers truly need your solution, and how big your opportunity is.",
     color: "from-blue-500 to-cyan-500",
   },
   {
     icon: Package,
     title: "Product",
-    description: "Evaluate product-market fit, features, and development roadmap",
+    description: "Evaluate how well your product solves the core problem and whether your MVP is ready for real users.",
     color: "from-purple-500 to-pink-500",
   },
   {
     icon: TrendingUp,
     title: "Business Model",
-    description: "Review revenue streams, pricing strategy, and unit economics",
+    description: "Check if your pricing, revenue potential, and unit economics can sustain and grow your startup.",
     color: "from-orange-500 to-red-500",
   },
   {
     icon: Megaphone,
     title: "Marketing",
-    description: "Assess brand strategy, channels, and customer acquisition",
+    description: "Identify the channels that work for your startup and uncover weaknesses in your acquisition funnel.",
     color: "from-green-500 to-emerald-500",
   },
   {
     icon: Settings,
     title: "Operations",
-    description: "Examine processes, tools, and operational efficiency",
+    description: "Analyze internal processes, execution speed, tools, and workflows to improve operational efficiency.",
     color: "from-yellow-500 to-orange-500",
   },
   {
     icon: DollarSign,
     title: "Finance",
-    description: "Analyze cash flow, runway, funding readiness, and projections",
+    description: "Review runway, expenses, and early financial health to ensure your startup is built on stable ground.",
     color: "from-emerald-500 to-teal-500",
   },
   {
     icon: Users,
     title: "Team",
-    description: "Evaluate team composition, skills gaps, and culture",
+    description: "Assess team structure, skill gaps, role clarity, and founder–market fit to strengthen execution.",
     color: "from-indigo-500 to-purple-500",
   },
   {
     icon: Shield,
     title: "Legal",
-    description: "Review compliance, IP protection, and legal structure",
+    description: "Review compliance, IP protection, contracts, and basic legal foundations to avoid future risks.",
     color: "from-rose-500 to-pink-500",
   },
 ];
@@ -68,12 +68,12 @@ const DiagnosticAreas = () => {
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center mb-16">
           <h2 className="mb-4 font-display text-3xl font-bold md:text-4xl lg:text-5xl">
-            8 Critical Areas,{' '}
-            <span className="text-gradient">One Complete Picture</span>
+            Assess Your Startup Across{' '}
+            <span className="text-gradient">8 Critical Business Pillars</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Our Diagnostic Engine performs a comprehensive scan of your startup, 
-            identifying strengths, weaknesses, and opportunities across every operational dimension.
+            Our AI Diagnostic Engine evaluates your startup across eight core areas, 
+            identifying strengths, weaknesses, and opportunities—so you know exactly what to fix and where to focus.
           </p>
         </div>
 
