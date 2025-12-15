@@ -289,46 +289,56 @@ const DiagnosticResult = () => {
             </div>
           </div>
           
-          {/* AI Analysis */}
+          {/* AI Analysis Section - Enhanced */}
           {diagnostic.ai_analysis && (
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <span className="text-xl">🤖</span>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
                 </div>
-                <h2 className="font-display text-xl font-bold">AI Analysis</h2>
+                <div>
+                  <h2 className="font-display text-xl font-bold">AI-Powered Analysis</h2>
+                  <p className="text-sm text-muted-foreground">Deep insights generated from your diagnostic data</p>
+                </div>
               </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{diagnostic.ai_analysis}</p>
+              
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-1))]/10 to-transparent border border-[hsl(var(--chart-1))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-1))]">8</div>
+                  <div className="text-xs text-muted-foreground">Areas Analyzed</div>
+                </div>
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-2))]/10 to-transparent border border-[hsl(var(--chart-2))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">{diagnostic.overall_score || 0}%</div>
+                  <div className="text-xs text-muted-foreground">Overall Score</div>
+                </div>
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-3))]/10 to-transparent border border-[hsl(var(--chart-3))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">{scores.filter(s => s.score >= 60).length}</div>
+                  <div className="text-xs text-muted-foreground">Strong Areas</div>
+                </div>
+              </div>
+              
+              <div className="prose prose-invert max-w-none bg-secondary/30 rounded-xl p-5 border border-border/50">
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm">{diagnostic.ai_analysis}</p>
               </div>
             </div>
           )}
           
-          {/* Recommendations */}
-          {diagnostic.ai_recommendations && (
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 shadow-card mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <span className="text-xl">💡</span>
-                </div>
-                <h2 className="font-display text-xl font-bold">Recommendations</h2>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{diagnostic.ai_recommendations}</p>
-              </div>
+          {/* Book a Call CTA - Unlocks Full Recommendations */}
+          <div className="bg-gradient-to-r from-primary/20 via-primary/15 to-primary/10 border border-primary/30 rounded-2xl p-8 text-center mb-8">
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-4">
+              <span className="text-3xl">🔓</span>
             </div>
-          )}
-          
-          {/* CTA */}
-          <div className="bg-gradient-to-r from-primary/20 via-primary/15 to-primary/10 border border-primary/30 rounded-2xl p-8 text-center">
-            <h2 className="font-display text-2xl font-bold mb-2">Want Expert Guidance?</h2>
+            <h2 className="font-display text-2xl font-bold mb-2">Unlock Your Full Action Plan</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Book a deep-dive consulting session and get a professional Startup Upgrade Plan tailored to your specific challenges.
+              Get personalized recommendations and a professional <strong className="text-foreground">Startup Upgrade Plan</strong> tailored to your specific challenges. Our experts will deliver it within 5–7 days after your consultation.
             </p>
-            <Button variant="hero" size="lg" className="gap-2">
-              <Calendar className="h-5 w-5" />
-              Book Consulting Session
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button variant="hero" size="lg" className="gap-2">
+                <Calendar className="h-5 w-5" />
+                Book Consulting Session
+              </Button>
+              <span className="text-sm text-muted-foreground">Detailed roadmap • Priority fixes • Growth strategy</span>
+            </div>
           </div>
         </div>
       </main>

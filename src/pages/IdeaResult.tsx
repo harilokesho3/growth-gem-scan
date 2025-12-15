@@ -333,46 +333,56 @@ const IdeaResult = () => {
             </div>
           </div>
           
-          {/* AI Analysis */}
+          {/* AI Analysis Section - Enhanced */}
           {idea.ai_analysis && (
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <span className="text-xl">🤖</span>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
                 </div>
-                <h2 className="font-display text-xl font-bold">AI Analysis</h2>
+                <div>
+                  <h2 className="font-display text-xl font-bold">AI-Powered Analysis</h2>
+                  <p className="text-sm text-muted-foreground">Deep insights generated from your idea validation data</p>
+                </div>
               </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{idea.ai_analysis}</p>
+              
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-1))]/10 to-transparent border border-[hsl(var(--chart-1))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-1))]">8</div>
+                  <div className="text-xs text-muted-foreground">Areas Analyzed</div>
+                </div>
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-2))]/10 to-transparent border border-[hsl(var(--chart-2))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">{idea.overall_score || 0}%</div>
+                  <div className="text-xs text-muted-foreground">Validation Score</div>
+                </div>
+                <div className="bg-gradient-to-br from-[hsl(var(--chart-3))]/10 to-transparent border border-[hsl(var(--chart-3))]/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">{validationScores.filter(s => s.score >= 60).length}/3</div>
+                  <div className="text-xs text-muted-foreground">Strong Scores</div>
+                </div>
+              </div>
+              
+              <div className="prose prose-invert max-w-none bg-secondary/30 rounded-xl p-5 border border-border/50">
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm">{idea.ai_analysis}</p>
               </div>
             </div>
           )}
           
-          {/* Recommendations */}
-          {idea.ai_recommendations && (
-            <div className="bg-gradient-to-br from-[hsl(var(--score-excellent))]/10 to-[hsl(var(--score-excellent))]/5 border border-[hsl(var(--score-excellent))]/20 rounded-2xl p-6 shadow-card mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-[hsl(var(--score-excellent))]/20 flex items-center justify-center">
-                  <span className="text-xl">🚀</span>
-                </div>
-                <h2 className="font-display text-xl font-bold">Next Steps</h2>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{idea.ai_recommendations}</p>
-              </div>
+          {/* Book a Call CTA - Unlocks Full Recommendations */}
+          <div className="bg-gradient-to-r from-[hsl(var(--score-excellent))]/20 via-[hsl(var(--score-excellent))]/15 to-[hsl(var(--score-excellent))]/10 border border-[hsl(var(--score-excellent))]/30 rounded-2xl p-8 text-center mb-8">
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-[hsl(var(--score-excellent))]/20 mb-4">
+              <span className="text-3xl">🚀</span>
             </div>
-          )}
-          
-          {/* CTA */}
-          <div className="bg-gradient-to-r from-[hsl(var(--score-excellent))]/20 via-[hsl(var(--score-excellent))]/15 to-[hsl(var(--score-excellent))]/10 border border-[hsl(var(--score-excellent))]/30 rounded-2xl p-8 text-center">
-            <h2 className="font-display text-2xl font-bold mb-2">Ready to Build?</h2>
+            <h2 className="font-display text-2xl font-bold mb-2">Ready to Launch Your Idea?</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Book a consulting session to develop a comprehensive go-to-market strategy and actionable roadmap.
+              Book a consulting session to get a <strong className="text-foreground">complete go-to-market strategy</strong> and actionable roadmap. Our experts will help you move from idea to execution.
             </p>
-            <Button variant="hero" size="lg" className="gap-2">
-              <Calendar className="h-5 w-5" />
-              Book Consulting Session
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button variant="hero" size="lg" className="gap-2">
+                <Calendar className="h-5 w-5" />
+                Book Consulting Session
+              </Button>
+              <span className="text-sm text-muted-foreground">MVP planning • Launch strategy • Investor readiness</span>
+            </div>
           </div>
         </div>
       </main>
