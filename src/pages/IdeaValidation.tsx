@@ -30,7 +30,6 @@ const IdeaValidationPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ideaTitle, setIdeaTitle] = useState('');
   const [ideaDescription, setIdeaDescription] = useState('');
-  const [targetMarket, setTargetMarket] = useState('');
   const [problemSolved, setProblemSolved] = useState('');
   
   // Operational area responses
@@ -55,7 +54,7 @@ const IdeaValidationPage = () => {
     setAreaResponses(prev => ({ ...prev, [key]: value }));
   };
 
-  const isFormComplete = ideaTitle && ideaDescription && targetMarket && problemSolved && 
+  const isFormComplete = ideaTitle && ideaDescription && problemSolved && 
     Object.values(areaResponses).every(v => v.trim().length > 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +71,7 @@ const IdeaValidationPage = () => {
           user_id: user.id,
           idea_title: ideaTitle,
           idea_description: ideaDescription,
-          target_market: targetMarket,
+          target_market: areaResponses.market, // Use market response as target market
           problem_solved: problemSolved,
           market_response: areaResponses.market,
           product_response: areaResponses.product,
@@ -100,7 +99,7 @@ const IdeaValidationPage = () => {
           ideaId: idea.id,
           ideaTitle,
           ideaDescription,
-          targetMarket,
+          targetMarket: areaResponses.market,
           problemSolved,
           areaResponses,
         },
@@ -205,18 +204,7 @@ const IdeaValidationPage = () => {
                   <p className="text-xs text-muted-foreground">{ideaDescription.length}/1000 characters</p>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="targetMarket">Target Market</Label>
-                  <Textarea
-                    id="targetMarket"
-                    placeholder="Who is your target customer? What are their demographics, behaviors, and pain points?"
-                    value={targetMarket}
-                    onChange={(e) => setTargetMarket(e.target.value)}
-                    rows={3}
-                    maxLength={500}
-                  />
-                  <p className="text-xs text-muted-foreground">{targetMarket.length}/500 characters</p>
-                </div>
+                
                 
                 <div className="space-y-2">
                   <Label htmlFor="problemSolved">Problem Solved</Label>
