@@ -23,50 +23,51 @@ const DIAGNOSTIC_AREAS = [
   { id: 'legal', name: 'Legal', description: 'Compliance, IP, and contracts' },
 ];
 
-const QUESTIONS = {
+interface Question {
+  text: string;
+  type: 'text' | 'yesno';
+  placeholder?: string;
+}
+
+const QUESTIONS: Record<string, Question[]> = {
   market: [
-    'How well do you understand your target customer?',
-    'How large is your total addressable market?',
-    'How strong is your competitive advantage?',
+    { text: 'Who is your ideal customer and what is their biggest pain point?', type: 'text', placeholder: 'Describe your target customer in up to 50 words...' },
+    { text: 'Who are your main competitors and what makes you different?', type: 'text', placeholder: 'Describe competition and your advantage in up to 50 words...' },
   ],
   product: [
-    'How validated is your product-market fit?',
-    'How mature is your product development process?',
-    'How strong is your product roadmap?',
+    { text: 'Describe your product and how it solves the customer problem.', type: 'text', placeholder: 'Describe your product in up to 50 words...' },
+    { text: 'Have you launched an MVP?', type: 'yesno' },
+    { text: 'Do you have paying customers?', type: 'yesno' },
   ],
   businessModel: [
-    'How clear are your revenue streams?',
-    'How healthy are your unit economics?',
-    'How scalable is your business model?',
+    { text: 'How do you make money? Describe your pricing model.', type: 'text', placeholder: 'Describe your revenue model in up to 50 words...' },
+    { text: 'Do you have positive unit economics?', type: 'yesno' },
   ],
   marketing: [
-    'How effective is your customer acquisition?',
-    'How strong is your brand awareness?',
-    'How optimized are your marketing channels?',
+    { text: 'How do customers discover your product?', type: 'text', placeholder: 'Describe your marketing channels in up to 50 words...' },
+    { text: 'Do you have a defined marketing strategy?', type: 'yesno' },
   ],
   operations: [
-    'How efficient are your core processes?',
-    'How scalable is your infrastructure?',
-    'How strong are your vendor relationships?',
+    { text: 'What tools and processes do you use to run your startup?', type: 'text', placeholder: 'Describe your operations in up to 50 words...' },
+    { text: 'Are your core processes documented?', type: 'yesno' },
   ],
   finance: [
-    'How healthy is your cash flow?',
-    'How long is your runway?',
-    'How well do you track key metrics?',
+    { text: 'What is your current financial situation and runway?', type: 'text', placeholder: 'Describe your finances in up to 50 words...' },
+    { text: 'Do you have external funding?', type: 'yesno' },
+    { text: 'Do you track key financial metrics regularly?', type: 'yesno' },
   ],
   team: [
-    'How strong is your founding team?',
-    'How effective is your hiring process?',
-    'How healthy is your company culture?',
+    { text: 'Describe your founding team and their key skills.', type: 'text', placeholder: 'Describe your team in up to 50 words...' },
+    { text: 'Do you have any skill gaps in the team?', type: 'yesno' },
   ],
   legal: [
-    'How protected is your intellectual property?',
-    'How compliant are you with regulations?',
-    'How well-structured are your contracts?',
+    { text: 'What is your current legal structure and registration status?', type: 'text', placeholder: 'Describe your legal setup in up to 50 words...' },
+    { text: 'Is your intellectual property protected?', type: 'yesno' },
+    { text: 'Are you compliant with relevant regulations?', type: 'yesno' },
   ],
 };
 
-const RATING_OPTIONS = ['Very Poor', 'Poor', 'Fair', 'Good', 'Excellent'];
+const MAX_WORDS = 50;
 
 const Diagnostic = () => {
   const { user, loading: authLoading } = useAuth();
@@ -101,13 +102,23 @@ const Diagnostic = () => {
     }));
   };
 
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
   const isStepComplete = () => {
     if (step === 0) {
       return companyName && industry && stage && teamSize;
     }
     const areaId = DIAGNOSTIC_AREAS[step - 1].id;
+    const areaQuestions = QUESTIONS[areaId as keyof typeof QUESTIONS];
     const areaResponses = responses[areaId] || {};
-    return Object.keys(areaResponses).length === 3;
+    
+    // Check if all questions have responses
+    return areaQuestions.every((_, idx) => {
+      const response = areaResponses[`q${idx}`];
+      return response && response.trim().length > 0;
+    });
   };
 
   const handleSubmit = async () => {
@@ -313,31 +324,60 @@ const Diagnostic = () => {
                 </div>
                 
                 <div className="space-y-6">
-                  {QUESTIONS[DIAGNOSTIC_AREAS[step - 1].id as keyof typeof QUESTIONS].map((question, idx) => (
-                    <div key={idx} className="space-y-3">
-                      <Label className="text-base">{question}</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {RATING_OPTIONS.map((option) => {
-                          const areaId = DIAGNOSTIC_AREAS[step - 1].id;
-                          const isSelected = responses[areaId]?.[`q${idx}`] === option;
-                          return (
-                            <button
-                              key={option}
-                              type="button"
-                              onClick={() => handleResponseChange(areaId, idx, option)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                isSelected
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-secondary text-foreground hover:bg-secondary/80'
-                              }`}
-                            >
-                              {option}
-                            </button>
-                          );
-                        })}
+                  {QUESTIONS[DIAGNOSTIC_AREAS[step - 1].id as keyof typeof QUESTIONS].map((question, idx) => {
+                    const areaId = DIAGNOSTIC_AREAS[step - 1].id;
+                    const currentValue = responses[areaId]?.[`q${idx}`] || '';
+                    const wordCount = countWords(currentValue);
+                    
+                    return (
+                      <div key={idx} className="space-y-3">
+                        <Label className="text-base">{question.text}</Label>
+                        
+                        {question.type === 'text' ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              placeholder={question.placeholder}
+                              value={currentValue}
+                              onChange={(e) => {
+                                const words = countWords(e.target.value);
+                                if (words <= MAX_WORDS || e.target.value.length < currentValue.length) {
+                                  handleResponseChange(areaId, idx, e.target.value);
+                                }
+                              }}
+                              className="min-h-[100px] resize-none"
+                            />
+                            <div className="flex justify-end">
+                              <span className={`text-xs ${wordCount > MAX_WORDS ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                {wordCount}/{MAX_WORDS} words
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex gap-3">
+                            {['Yes', 'No'].map((option) => {
+                              const isSelected = currentValue === option;
+                              return (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => handleResponseChange(areaId, idx, option)}
+                                  className={`px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+                                    isSelected
+                                      ? option === 'Yes' 
+                                        ? 'bg-[hsl(var(--score-good))] text-white'
+                                        : 'bg-[hsl(var(--score-poor))] text-white'
+                                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                                  }`}
+                                >
+                                  {option}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
