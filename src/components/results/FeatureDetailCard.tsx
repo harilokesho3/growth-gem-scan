@@ -11,7 +11,6 @@ interface FeatureDetailCardProps {
   details: {
     whatItMeans: string;
     keyFactors: string[];
-    recommendations: string[];
   };
 }
 
@@ -108,21 +107,6 @@ const FeatureDetailCard = ({ title, score, description, userResponse, icon: Icon
                 <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
                   {factor}
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--chart-4))]" />
-              Recommendations
-            </h4>
-            <ul className="space-y-1">
-              {details.recommendations.map((rec, idx) => (
-                <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-[hsl(var(--chart-4))] mt-1">{idx + 1}.</span>
-                  {rec}
                 </li>
               ))}
             </ul>
