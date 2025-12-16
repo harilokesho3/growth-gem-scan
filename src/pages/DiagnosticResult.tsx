@@ -11,6 +11,7 @@ import ScoreBarChart from '@/components/results/ScoreBarChart';
 import ScoreTable from '@/components/results/ScoreTable';
 import OverallScoreCard from '@/components/results/OverallScoreCard';
 import FeatureDetailCard from '@/components/results/FeatureDetailCard';
+import AIAnalysisContent from '@/components/results/AIAnalysisContent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DiagnosticData {
@@ -317,8 +318,8 @@ const DiagnosticResult = () => {
                 </div>
               </div>
               
-              <div className="prose prose-invert max-w-none bg-secondary/30 rounded-xl p-5 border border-border/50">
-                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm">{diagnostic.ai_analysis}</p>
+              <div className="bg-secondary/30 rounded-xl p-6 border border-border/50">
+                <AIAnalysisContent content={diagnostic.ai_analysis} />
               </div>
             </div>
           )}
