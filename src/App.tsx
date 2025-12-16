@@ -10,6 +10,7 @@ import Diagnostic from "./pages/Diagnostic";
 import DiagnosticResult from "./pages/DiagnosticResult";
 import IdeaValidation from "./pages/IdeaValidation";
 import IdeaResult from "./pages/IdeaResult";
+import BookCall from "./pages/BookCall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/diagnostic-result/:id" element={<DiagnosticResult />} />
             <Route path="/idea-validation" element={<IdeaValidation />} />
             <Route path="/idea-result/:id" element={<IdeaResult />} />
+            <Route path="/book-call" element={<BookCall />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

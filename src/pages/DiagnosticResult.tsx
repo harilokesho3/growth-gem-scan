@@ -334,10 +334,12 @@ const DiagnosticResult = () => {
               Get personalized recommendations and a professional <strong className="text-foreground">Startup Upgrade Plan</strong> tailored to your specific challenges. Our experts will deliver it within 5–7 days after your consultation.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="hero" size="lg" className="gap-2">
-                <Calendar className="h-5 w-5" />
-                Book Consulting Session
-              </Button>
+              <Link to="/book-call">
+                <Button variant="hero" size="lg" className="gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Book Consulting Session
+                </Button>
+              </Link>
               <span className="text-sm text-muted-foreground">Detailed roadmap • Priority fixes • Growth strategy</span>
             </div>
           </div>

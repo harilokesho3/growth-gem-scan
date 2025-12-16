@@ -378,10 +378,12 @@ const IdeaResult = () => {
               Book a consulting session to get a <strong className="text-foreground">complete go-to-market strategy</strong> and actionable roadmap. Our experts will help you move from idea to execution.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="hero" size="lg" className="gap-2">
-                <Calendar className="h-5 w-5" />
-                Book Consulting Session
-              </Button>
+              <Link to="/book-call">
+                <Button variant="hero" size="lg" className="gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Book Consulting Session
+                </Button>
+              </Link>
               <span className="text-sm text-muted-foreground">MVP planning • Launch strategy • Investor readiness</span>
             </div>
           </div>

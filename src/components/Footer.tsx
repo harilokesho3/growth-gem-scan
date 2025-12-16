@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Rocket } from "lucide-react";
 
 const Footer = () => {
@@ -7,12 +8,12 @@ const Footer = () => {
         <div className="grid gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+            <Link to="/" className="flex items-center gap-2 mb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                 <Rocket className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="font-display text-xl font-bold">StartupSaver</span>
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground">
               AI-powered diagnostics and expert consulting for startup founders.
             </p>
@@ -22,10 +23,10 @@ const Footer = () => {
           <div>
             <h4 className="mb-4 font-semibold">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Diagnostic Engine</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Idea Validation</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Consulting</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+              <li><Link to="/diagnostic" className="hover:text-foreground transition-colors">Diagnostic Engine</Link></li>
+              <li><Link to="/idea-validation" className="hover:text-foreground transition-colors">Idea Validation</Link></li>
+              <li><a href="#consulting" className="hover:text-foreground transition-colors">Consulting</a></li>
+              <li><Link to="/book-call" className="hover:text-foreground transition-colors">Book a Call</Link></li>
             </ul>
           </div>
 
