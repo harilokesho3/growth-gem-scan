@@ -57,12 +57,12 @@ Consider the operational area responses when evaluating:
 - Team responses inform overall viability
 - Legal responses inform feasibility and risks
 
+IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
+
 Provide:
 - Scores for each dimension
 - An overall viability score
-- Strengths and opportunities
-- Risks and challenges
-- Next steps to validate the idea
+- Strengths and weaknesses
 
 Respond in JSON format with this structure:
 {
@@ -72,8 +72,8 @@ Respond in JSON format with this structure:
     "marketPotential": number,
     "overall": number
   },
-  "analysis": "comprehensive analysis text covering strengths, opportunities, risks, and challenges based on all provided information",
-  "recommendations": "specific next steps to validate and develop the idea"
+  "analysis": "Include **Strengths:** section listing key strengths, then **Weaknesses:** section listing key challenges based on all provided information",
+  "recommendations": "specific next steps to validate and develop the idea (this will NOT be shown in PDF, only in consultation)"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

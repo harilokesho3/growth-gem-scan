@@ -35,8 +35,9 @@ ${JSON.stringify(responses, null, 2)}
 Provide a comprehensive analysis with:
 1. Scores (0-100) for each of the 8 areas: Market, Product, Business Model, Marketing, Operations, Finance, Team, Legal
 2. An overall score
-3. Key strengths and weaknesses
-4. Specific actionable recommendations
+3. Key strengths and weaknesses for each area
+
+IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
 
 Respond in JSON format with this structure:
 {
@@ -51,8 +52,8 @@ Respond in JSON format with this structure:
     "legal": number,
     "overall": number
   },
-  "analysis": "comprehensive analysis text",
-  "recommendations": "specific actionable recommendations"
+  "analysis": "Format this with **Market:** analysis... **Product:** analysis... etc. Include **Strengths:** and **Weaknesses:** subsections within each area.",
+  "recommendations": "specific actionable recommendations (this will NOT be shown in PDF, only in consultation)"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
