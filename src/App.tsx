@@ -11,6 +11,7 @@ import DiagnosticResult from "./pages/DiagnosticResult";
 import IdeaValidation from "./pages/IdeaValidation";
 import IdeaResult from "./pages/IdeaResult";
 import BookCall from "./pages/BookCall";
+import ScheduleDemo from "./pages/ScheduleDemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/idea-validation" element={<IdeaValidation />} />
             <Route path="/idea-result/:id" element={<IdeaResult />} />
             <Route path="/book-call" element={<BookCall />} />
+            <Route path="/schedule-demo" element={<ScheduleDemo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

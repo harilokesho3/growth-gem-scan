@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Calendar } from "lucide-react";
+import { Rocket, Calendar, Monitor } from "lucide-react";
 
 const Navbar = () => {
   return (
@@ -34,9 +34,9 @@ const Navbar = () => {
               Sign In
             </Button>
           </Link>
-          <Link to="/book-call">
+          <Link to="/schedule-demo">
             <Button size="sm" className="gap-2">
-              <Calendar className="h-4 w-4" />
+              <Monitor className="h-4 w-4" />
               Schedule Demo
             </Button>
           </Link>

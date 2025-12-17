@@ -134,6 +134,26 @@ const addScoreBar = (doc: jsPDF, label: string, score: number, x: number, y: num
   doc.text(score.toString(), x + width + 5, y + 5);
 };
 
+// Helper to extract strengths and weaknesses from AI analysis
+const extractStrengthsAndWeaknesses = (analysis: string | null): { strengths: string; weaknesses: string } => {
+  if (!analysis) {
+    return { strengths: 'Analysis not available', weaknesses: 'Analysis not available' };
+  }
+  
+  // Try to find strengths section
+  const strengthsMatch = analysis.match(/\*\*Strengths?:\*\*\s*([\s\S]*?)(?=\*\*|$)/i) ||
+    analysis.match(/Strengths?:\s*([\s\S]*?)(?=Weakness|$)/i);
+  
+  // Try to find weaknesses section
+  const weaknessesMatch = analysis.match(/\*\*Weakness(?:es)?:\*\*\s*([\s\S]*?)(?=\*\*|$)/i) ||
+    analysis.match(/Weakness(?:es)?:\s*([\s\S]*?)(?=Recommendation|Next|$)/i);
+  
+  const strengths = strengthsMatch ? strengthsMatch[1].trim() : 'See analysis for details';
+  const weaknesses = weaknessesMatch ? weaknessesMatch[1].trim() : 'See analysis for details';
+  
+  return { strengths, weaknesses };
+};
+
 export const generateDiagnosticPdf = (data: DiagnosticPdfData) => {
   const doc = new jsPDF();
   const date = new Date(data.created_at).toLocaleDateString('en-US', {
@@ -188,15 +208,11 @@ export const generateDiagnosticPdf = (data: DiagnosticPdfData) => {
   
   scoreY += 5;
   
-  // AI Analysis
-  if (data.ai_analysis) {
-    scoreY = addSection(doc, 'AI Analysis', data.ai_analysis, scoreY);
-  }
+  // Strengths & Weaknesses (extracted from AI Analysis)
+  const { strengths, weaknesses } = extractStrengthsAndWeaknesses(data.ai_analysis);
   
-  // Recommendations
-  if (data.ai_recommendations) {
-    addSection(doc, 'Recommendations', data.ai_recommendations, scoreY);
-  }
+  scoreY = addSection(doc, 'Strengths', strengths, scoreY);
+  addSection(doc, 'Weaknesses', weaknesses, scoreY);
   
   // Footer
   const pageCount = doc.getNumberOfPages();
@@ -266,15 +282,11 @@ export const generateIdeaPdf = (data: IdeaPdfData) => {
   // Problem Solved
   currentY = addSection(doc, 'Problem Solved', data.problem_solved, currentY);
   
-  // AI Analysis
-  if (data.ai_analysis) {
-    currentY = addSection(doc, 'AI Analysis', data.ai_analysis, currentY);
-  }
+  // Strengths & Weaknesses (extracted from AI Analysis)
+  const { strengths, weaknesses } = extractStrengthsAndWeaknesses(data.ai_analysis);
   
-  // Recommendations
-  if (data.ai_recommendations) {
-    addSection(doc, 'Next Steps', data.ai_recommendations, currentY);
-  }
+  currentY = addSection(doc, 'Strengths', strengths, currentY);
+  addSection(doc, 'Weaknesses', weaknesses, currentY);
   
   // Footer
   const pageCount = doc.getNumberOfPages();
