@@ -66,33 +66,51 @@ const FeedbackForm = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-            {/* Star Rating */}
-            <div className="space-y-2">
-              <Label className="text-foreground">How would you rate your experience?</Label>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    onMouseEnter={() => setHoveredRating(star)}
-                    onMouseLeave={() => setHoveredRating(0)}
-                    className="p-1 transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`h-7 w-7 transition-colors ${
-                        star <= (hoveredRating || rating)
-                          ? 'fill-primary text-primary'
-                          : 'text-muted-foreground'
-                      }`}
-                    />
-                  </button>
-                ))}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Top row - Rating and Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <Label className="text-foreground">How would you rate your experience?</Label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`h-7 w-7 transition-colors ${
+                          star <= (hoveredRating || rating)
+                            ? 'fill-primary text-primary'
+                            : 'text-muted-foreground'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email (Optional) */}
+              <div className="space-y-2">
+                <Label htmlFor="feedback-email" className="text-foreground">
+                  Email <span className="text-muted-foreground text-xs">(optional)</span>
+                </Label>
+                <Input
+                  id="feedback-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-secondary/50 border-border focus:border-primary"
+                />
               </div>
             </div>
 
-            {/* Message */}
+            {/* Feedback textarea - full width */}
             <div className="space-y-2">
               <Label htmlFor="feedback-message" className="text-foreground">Your Feedback *</Label>
               <Textarea
@@ -100,31 +118,17 @@ const FeedbackForm = () => {
                 placeholder="Tell us what you think..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[80px] bg-secondary/50 border-border focus:border-primary"
+                className="min-h-[100px] bg-secondary/50 border-border focus:border-primary"
                 required
               />
             </div>
 
-            {/* Email (Optional) */}
-            <div className="space-y-2">
-              <Label htmlFor="feedback-email" className="text-foreground">
-                Email <span className="text-muted-foreground text-xs">(optional)</span>
-              </Label>
-              <Input
-                id="feedback-email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-secondary/50 border-border focus:border-primary"
-              />
-            </div>
-
+            {/* Submit button - full width at bottom */}
             <Button
               type="submit"
               variant="hero"
               size="lg"
-              className="w-full gap-2 h-[42px]"
+              className="w-full gap-2"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -132,7 +136,7 @@ const FeedbackForm = () => {
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  Submit
+                  Submit Feedback
                 </>
               )}
             </Button>
