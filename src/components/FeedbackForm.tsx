@@ -53,26 +53,24 @@ const FeedbackForm = () => {
   };
 
   return (
-    <section className="py-20 px-4 relative">
-      <div className="container mx-auto max-w-2xl">
-        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-8 shadow-card">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-primary/20 mb-4">
-              <MessageSquare className="h-7 w-7 text-primary" />
+    <section className="py-20 px-4 md:px-8 lg:px-16 relative">
+      <div className="w-full">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-8 md:p-12 shadow-card">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-primary/20 shrink-0">
+              <MessageSquare className="h-6 w-6 text-primary" />
             </div>
-            <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
-              Share Your Feedback
-            </h2>
-            <p className="text-muted-foreground">
-              Help us improve Startup Saver with your valuable insights
-            </p>
+            <div>
+              <h2 className="font-display text-xl md:text-2xl font-bold">Share Your Feedback</h2>
+              <p className="text-muted-foreground text-sm">Help us improve Startup Saver</p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
             {/* Star Rating */}
             <div className="space-y-2">
               <Label className="text-foreground">How would you rate your experience?</Label>
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -83,7 +81,7 @@ const FeedbackForm = () => {
                     className="p-1 transition-transform hover:scale-110"
                   >
                     <Star
-                      className={`h-8 w-8 transition-colors ${
+                      className={`h-7 w-7 transition-colors ${
                         star <= (hoveredRating || rating)
                           ? 'fill-primary text-primary'
                           : 'text-muted-foreground'
@@ -99,10 +97,10 @@ const FeedbackForm = () => {
               <Label htmlFor="feedback-message" className="text-foreground">Your Feedback *</Label>
               <Textarea
                 id="feedback-message"
-                placeholder="Tell us what you think about Startup Saver..."
+                placeholder="Tell us what you think..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[120px] bg-secondary/50 border-border focus:border-primary"
+                className="min-h-[80px] bg-secondary/50 border-border focus:border-primary"
                 required
               />
             </div>
@@ -110,7 +108,7 @@ const FeedbackForm = () => {
             {/* Email (Optional) */}
             <div className="space-y-2">
               <Label htmlFor="feedback-email" className="text-foreground">
-                Email <span className="text-muted-foreground">(optional)</span>
+                Email <span className="text-muted-foreground text-xs">(optional)</span>
               </Label>
               <Input
                 id="feedback-email"
@@ -120,24 +118,21 @@ const FeedbackForm = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-secondary/50 border-border focus:border-primary"
               />
-              <p className="text-xs text-muted-foreground">
-                Share your email if you'd like us to follow up on your feedback
-              </p>
             </div>
 
             <Button
               type="submit"
               variant="hero"
               size="lg"
-              className="w-full gap-2"
+              className="w-full gap-2 h-[42px]"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>Submitting...</>
               ) : (
                 <>
-                  <Send className="h-5 w-5" />
-                  Submit Feedback
+                  <Send className="h-4 w-4" />
+                  Submit
                 </>
               )}
             </Button>
