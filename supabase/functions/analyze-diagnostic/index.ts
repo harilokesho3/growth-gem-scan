@@ -12,10 +12,42 @@ serve(async (req) => {
   }
 
   try {
+    // Extract and verify Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error("Missing Authorization header");
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { diagnosticId, companyName, industry, stage, teamSize, responses } = await req.json();
     
     console.log("Analyzing diagnostic for:", companyName);
     
+    // Create client with user JWT for RLS enforcement
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify user owns this diagnostic (RLS will enforce this)
+    const { data: diagnostic, error: authError } = await userSupabase
+      .from('diagnostics')
+      .select('id, user_id')
+      .eq('id', diagnosticId)
+      .single();
+
+    if (authError || !diagnostic) {
+      console.error("Authorization check failed:", authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized or not found' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
@@ -121,10 +153,9 @@ Respond in JSON format with this structure:
       };
     }
 
-    // Update the diagnostic in the database
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Update the diagnostic in the database using service role key for the update
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { error: updateError } = await supabase
       .from('diagnostics')
