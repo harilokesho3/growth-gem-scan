@@ -25,7 +25,7 @@ const DIAGNOSTIC_AREAS = [
 
 interface Question {
   text: string;
-  type: 'text' | 'yesno' | 'choice';
+  type: 'text' | 'yesno' | 'choice' | 'multiselect';
   placeholder?: string;
   options?: string[];
 }
@@ -46,7 +46,7 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
   marketing: [
     { text: 'How do customers discover your product?', type: 'text', placeholder: 'Describe your marketing channels in up to 50 words...' },
-    { text: 'Do you have a defined marketing strategy?', type: 'yesno' },
+    { text: 'Which of these do you actively track weekly?', type: 'multiselect', options: ['CAC', 'LTV', 'Channel-wise ROI', 'None'] },
   ],
   operations: [
     { text: 'What tools and processes do you use to run your startup?', type: 'text', placeholder: 'Describe your operations in up to 50 words...' },
@@ -362,6 +362,40 @@ const Diagnostic = () => {
                                   key={option}
                                   type="button"
                                   onClick={() => handleResponseChange(areaId, idx, option)}
+                                  className={`px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+                                    isSelected
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                                  }`}
+                                >
+                                  {option}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : question.type === 'multiselect' && question.options ? (
+                          <div className="flex flex-wrap gap-3">
+                            {question.options.map((option) => {
+                              const selectedOptions = currentValue ? currentValue.split(', ') : [];
+                              const isSelected = selectedOptions.includes(option);
+                              return (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => {
+                                    let newSelected: string[];
+                                    if (option === 'None') {
+                                      newSelected = isSelected ? [] : ['None'];
+                                    } else {
+                                      newSelected = selectedOptions.filter(o => o !== 'None');
+                                      if (isSelected) {
+                                        newSelected = newSelected.filter(o => o !== option);
+                                      } else {
+                                        newSelected = [...newSelected, option];
+                                      }
+                                    }
+                                    handleResponseChange(areaId, idx, newSelected.join(', '));
+                                  }}
                                   className={`px-6 py-3 rounded-lg text-sm font-medium transition-all ${
                                     isSelected
                                       ? 'bg-primary text-primary-foreground'
