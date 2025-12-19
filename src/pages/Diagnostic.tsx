@@ -25,8 +25,9 @@ const DIAGNOSTIC_AREAS = [
 
 interface Question {
   text: string;
-  type: 'text' | 'yesno';
+  type: 'text' | 'yesno' | 'choice';
   placeholder?: string;
+  options?: string[];
 }
 
 const QUESTIONS: Record<string, Question[]> = {
@@ -41,7 +42,7 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
   businessModel: [
     { text: 'How do you make money? Describe your pricing model.', type: 'text', placeholder: 'Describe your revenue model in up to 50 words...' },
-    { text: 'Do you have positive unit economics?', type: 'yesno' },
+    { text: 'What is your contribution margin per order (%)?', type: 'choice', options: ['< 0%', '0–10%', '10–30%', '>30%'] },
   ],
   marketing: [
     { text: 'How do customers discover your product?', type: 'text', placeholder: 'Describe your marketing channels in up to 50 words...' },
@@ -351,6 +352,26 @@ const Diagnostic = () => {
                                 {wordCount}/{MAX_WORDS} words
                               </span>
                             </div>
+                          </div>
+                        ) : question.type === 'choice' && question.options ? (
+                          <div className="flex flex-wrap gap-3">
+                            {question.options.map((option) => {
+                              const isSelected = currentValue === option;
+                              return (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => handleResponseChange(areaId, idx, option)}
+                                  className={`px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+                                    isSelected
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                                  }`}
+                                >
+                                  {option}
+                                </button>
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="flex gap-3">
