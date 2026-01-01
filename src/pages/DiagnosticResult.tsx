@@ -12,6 +12,7 @@ import ScoreTable from '@/components/results/ScoreTable';
 import OverallScoreCard from '@/components/results/OverallScoreCard';
 import FeatureDetailCard from '@/components/results/FeatureDetailCard';
 import AIAnalysisContent from '@/components/results/AIAnalysisContent';
+import ActionFramework from '@/components/results/ActionFramework';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DiagnosticData {
@@ -323,6 +324,11 @@ const DiagnosticResult = () => {
               </div>
             </div>
           )}
+
+          {/* Action Framework Section */}
+          <div className="mb-8">
+            <ActionFramework recommendations={diagnostic.ai_recommendations} />
+          </div>
           
           {/* Book a Call CTA - Unlocks Full Recommendations */}
           <div className="bg-gradient-to-r from-primary/20 via-primary/15 to-primary/10 border border-primary/30 rounded-2xl p-8 text-center mb-8">
