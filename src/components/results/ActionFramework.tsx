@@ -1,4 +1,4 @@
-import { Ban, Rocket, AlertTriangle, Clock } from 'lucide-react';
+import { Ban, Rocket, AlertTriangle, Clock, Flag, ThumbsUp } from 'lucide-react';
 
 interface ActionFrameworkProps {
   recommendations?: string | null;
@@ -10,6 +10,8 @@ const ActionFramework = ({ recommendations }: ActionFrameworkProps) => {
     if (!text) return null;
     
     const sections = {
+      redFlags: [] as string[],
+      greenFlags: [] as string[],
       stopDoing: [] as string[],
       startDoing: [] as string[],
       fixFirst: [] as string[],
@@ -22,7 +24,11 @@ const ActionFramework = ({ recommendations }: ActionFrameworkProps) => {
     
     lines.forEach(line => {
       const lowerLine = line.toLowerCase();
-      if (lowerLine.includes('stop doing') || lowerLine.includes('stop:')) {
+      if (lowerLine.includes('red flag') || lowerLine.includes('warning') || lowerLine.includes('concern')) {
+        currentSection = 'redFlags';
+      } else if (lowerLine.includes('green flag') || lowerLine.includes('strength') || lowerLine.includes('positive')) {
+        currentSection = 'greenFlags';
+      } else if (lowerLine.includes('stop doing') || lowerLine.includes('stop:')) {
         currentSection = 'stopDoing';
       } else if (lowerLine.includes('start doing') || lowerLine.includes('start:')) {
         currentSection = 'startDoing';
@@ -41,6 +47,25 @@ const ActionFramework = ({ recommendations }: ActionFrameworkProps) => {
   };
 
   const parsed = parseRecommendations(recommendations);
+
+  const flagCards = [
+    {
+      title: 'Red Flags',
+      icon: Flag,
+      color: 'hsl(0 84% 60%)',
+      bgColor: 'hsl(0 84% 60%)',
+      items: parsed?.redFlags || [],
+      placeholder: 'Critical risks or warning signs that need immediate attention',
+    },
+    {
+      title: 'Green Flags',
+      icon: ThumbsUp,
+      color: 'hsl(142 76% 36%)',
+      bgColor: 'hsl(142 76% 36%)',
+      items: parsed?.greenFlags || [],
+      placeholder: 'Strengths and positive indicators that show promise',
+    },
+  ];
 
   const actionCards = [
     {
@@ -77,6 +102,47 @@ const ActionFramework = ({ recommendations }: ActionFrameworkProps) => {
     },
   ];
 
+  const renderCard = (card: typeof flagCards[0] | typeof actionCards[0]) => {
+    const Icon = card.icon;
+    const hasItems = card.items.length > 0;
+    
+    return (
+      <div 
+        key={card.title}
+        className="border border-border rounded-xl p-5 hover:border-primary/30 transition-colors"
+        style={{ 
+          background: `linear-gradient(135deg, ${card.bgColor}10 0%, transparent 100%)`,
+          borderColor: `${card.bgColor}30`
+        }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div 
+            className="h-10 w-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${card.bgColor}20` }}
+          >
+            <Icon className="h-5 w-5" style={{ color: card.color }} />
+          </div>
+          <h3 className="font-semibold text-foreground">{card.title}</h3>
+        </div>
+        
+        {hasItems ? (
+          <ul className="space-y-2">
+            {card.items.slice(0, 3).map((item, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="text-primary mt-1">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">
+            {card.placeholder}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-card">
       <div className="flex items-center gap-3 mb-6">
@@ -89,47 +155,14 @@ const ActionFramework = ({ recommendations }: ActionFrameworkProps) => {
         </div>
       </div>
 
+      {/* Red Flags & Green Flags */}
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
+        {flagCards.map(renderCard)}
+      </div>
+
+      {/* Action Items */}
       <div className="grid md:grid-cols-2 gap-4">
-        {actionCards.map((card) => {
-          const Icon = card.icon;
-          const hasItems = card.items.length > 0;
-          
-          return (
-            <div 
-              key={card.title}
-              className="border border-border rounded-xl p-5 hover:border-primary/30 transition-colors"
-              style={{ 
-                background: `linear-gradient(135deg, ${card.bgColor}10 0%, transparent 100%)`,
-                borderColor: `${card.bgColor}30`
-              }}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div 
-                  className="h-10 w-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${card.bgColor}20` }}
-                >
-                  <Icon className="h-5 w-5" style={{ color: card.color }} />
-                </div>
-                <h3 className="font-semibold text-foreground">{card.title}</h3>
-              </div>
-              
-              {hasItems ? (
-                <ul className="space-y-2">
-                  {card.items.slice(0, 3).map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <span className="text-primary mt-1">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  {card.placeholder}
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {actionCards.map(renderCard)}
       </div>
 
       <div className="mt-6 p-4 bg-secondary/30 rounded-xl border border-border/50 text-center">
