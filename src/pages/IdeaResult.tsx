@@ -12,6 +12,7 @@ import ScoreTable from '@/components/results/ScoreTable';
 import OverallScoreCard from '@/components/results/OverallScoreCard';
 import FeatureDetailCard from '@/components/results/FeatureDetailCard';
 import AIAnalysisContent from '@/components/results/AIAnalysisContent';
+import ActionFramework from '@/components/results/ActionFramework';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface IdeaData {
@@ -367,6 +368,11 @@ const IdeaResult = () => {
               </div>
             </div>
           )}
+
+          {/* Action Framework Section */}
+          <div className="mb-8">
+            <ActionFramework recommendations={idea.ai_recommendations} />
+          </div>
           
           {/* Book a Call CTA - Unlocks Full Recommendations */}
           <div className="bg-gradient-to-r from-[hsl(var(--score-excellent))]/20 via-[hsl(var(--score-excellent))]/15 to-[hsl(var(--score-excellent))]/10 border border-[hsl(var(--score-excellent))]/30 rounded-2xl p-8 text-center mb-8">
