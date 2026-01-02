@@ -6,6 +6,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// UUID validation regex
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Input validation helper
+const validateInput = (text: unknown, maxLength: number = 1000): string => {
+  if (typeof text !== 'string') return '';
+  return text.trim().slice(0, maxLength);
+};
+
+// Sanitize text to prevent prompt injection
+const sanitizeForPrompt = (text: string): string => {
+  return text
+    .replace(/system:|assistant:|user:/gi, '')
+    .replace(/[\[\]{}]/g, '')
+    .trim();
+};
+
+// Validate and sanitize area responses object
+const validateAreaResponses = (areaResponses: unknown): Record<string, string> => {
+  if (!areaResponses || typeof areaResponses !== 'object') return {};
+  const result: Record<string, string> = {};
+  const allowedKeys = ['market', 'product', 'businessModel', 'marketing', 'operations', 'finance', 'team', 'legal'];
+  for (const [key, value] of Object.entries(areaResponses as Record<string, unknown>)) {
+    if (allowedKeys.includes(key)) {
+      result[key] = sanitizeForPrompt(validateInput(value, 2000));
+    }
+  }
+  return result;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,9 +52,35 @@ serve(async (req) => {
       });
     }
 
-    const { ideaId, ideaTitle, ideaDescription, targetMarket, problemSolved, areaResponses } = await req.json();
+    const body = await req.json();
+    const { ideaId, ideaTitle, ideaDescription, targetMarket, problemSolved, areaResponses } = body;
     
-    console.log("Analyzing idea:", ideaTitle);
+    // Validate UUID format
+    if (!ideaId || !uuidRegex.test(ideaId)) {
+      console.error("Invalid ideaId format:", ideaId);
+      return new Response(JSON.stringify({ error: 'Invalid ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate and sanitize all inputs
+    const safeIdeaTitle = sanitizeForPrompt(validateInput(ideaTitle, 200));
+    const safeIdeaDescription = sanitizeForPrompt(validateInput(ideaDescription, 2000));
+    const safeTargetMarket = sanitizeForPrompt(validateInput(targetMarket, 500));
+    const safeProblemSolved = sanitizeForPrompt(validateInput(problemSolved, 2000));
+    const safeAreaResponses = validateAreaResponses(areaResponses);
+
+    // Ensure required fields are present
+    if (!safeIdeaTitle || !safeIdeaDescription || !safeProblemSolved) {
+      console.error("Missing required fields");
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log("Analyzing idea:", safeIdeaTitle);
     
     // Create client with user JWT for RLS enforcement
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -55,27 +111,27 @@ serve(async (req) => {
 
     // Build operational areas section if provided
     let operationalAreasSection = '';
-    if (areaResponses) {
+    if (Object.keys(safeAreaResponses).length > 0) {
       operationalAreasSection = `
 Idea Stage Details:
-- Market (Target Customer): ${areaResponses.market || 'Not provided'}
-- Product (Solution): ${areaResponses.product || 'Not provided'}
-- Business Model (Revenue): ${areaResponses.businessModel || 'Not provided'}
-- Marketing (Customer Acquisition): ${areaResponses.marketing || 'Not provided'}
-- Operations (Resources/Tools): ${areaResponses.operations || 'Not provided'}
-- Finance (3-Month Budget): ${areaResponses.finance || 'Not provided'}
-- Team (Founders & Skills): ${areaResponses.team || 'Not provided'}
-- Legal (Registration Status): ${areaResponses.legal || 'Not provided'}
+- Market (Target Customer): ${safeAreaResponses.market || 'Not provided'}
+- Product (Solution): ${safeAreaResponses.product || 'Not provided'}
+- Business Model (Revenue): ${safeAreaResponses.businessModel || 'Not provided'}
+- Marketing (Customer Acquisition): ${safeAreaResponses.marketing || 'Not provided'}
+- Operations (Resources/Tools): ${safeAreaResponses.operations || 'Not provided'}
+- Finance (3-Month Budget): ${safeAreaResponses.finance || 'Not provided'}
+- Team (Founders & Skills): ${safeAreaResponses.team || 'Not provided'}
+- Legal (Registration Status): ${safeAreaResponses.legal || 'Not provided'}
 `;
     }
 
     const prompt = `You are a startup idea validation expert. Analyze this business idea and provide scores and recommendations.
 
 Idea Details:
-- Title: ${ideaTitle}
-- Description: ${ideaDescription}
-- Target Market: ${targetMarket}
-- Problem Solved: ${problemSolved}
+- Title: ${safeIdeaTitle}
+- Description: ${safeIdeaDescription}
+- Target Market: ${safeTargetMarket}
+- Problem Solved: ${safeProblemSolved}
 ${operationalAreasSection}
 Evaluate the idea on:
 1. Feasibility (0-100): How realistic is it to build and launch this?
@@ -91,6 +147,25 @@ Consider the operational area responses when evaluating:
 
 IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
 
+IMPORTANT: In your recommendations, include structured sections with these exact headers (one item per line after each header):
+**Red Flags:**
+- [critical risks or warning signs]
+
+**Green Flags:**
+- [strengths and positive indicators]
+
+**Stop Doing:**
+- [activities to stop immediately]
+
+**Start Doing:**
+- [new activities to begin]
+
+**Fix First:**
+- [urgent priorities to address immediately]
+
+**Fix Later:**
+- [important but can wait]
+
 Provide:
 - Scores for each dimension
 - An overall viability score
@@ -105,7 +180,7 @@ Respond in JSON format with this structure:
     "overall": number
   },
   "analysis": "Include **Strengths:** section listing key strengths, then **Weaknesses:** section listing key challenges based on all provided information",
-  "recommendations": "specific next steps to validate and develop the idea (this will NOT be shown in PDF, only in consultation)"
+  "recommendations": "Include all the structured sections: Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later with specific actionable items"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

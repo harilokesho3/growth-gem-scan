@@ -6,6 +6,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// UUID validation regex
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Input validation helper
+const validateInput = (text: unknown, maxLength: number = 1000): string => {
+  if (typeof text !== 'string') return '';
+  return text.trim().slice(0, maxLength);
+};
+
+// Sanitize text to prevent prompt injection
+const sanitizeForPrompt = (text: string): string => {
+  return text
+    .replace(/system:|assistant:|user:/gi, '')
+    .replace(/[\[\]{}]/g, '')
+    .trim();
+};
+
+// Validate and sanitize responses object
+const validateResponses = (responses: unknown): Record<string, string> => {
+  if (!responses || typeof responses !== 'object') return {};
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(responses as Record<string, unknown>)) {
+    if (typeof key === 'string' && key.length <= 50) {
+      result[sanitizeForPrompt(validateInput(key, 50))] = sanitizeForPrompt(validateInput(value, 2000));
+    }
+  }
+  return result;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,9 +51,35 @@ serve(async (req) => {
       });
     }
 
-    const { diagnosticId, companyName, industry, stage, teamSize, responses } = await req.json();
+    const body = await req.json();
+    const { diagnosticId, companyName, industry, stage, teamSize, responses } = body;
     
-    console.log("Analyzing diagnostic for:", companyName);
+    // Validate UUID format
+    if (!diagnosticId || !uuidRegex.test(diagnosticId)) {
+      console.error("Invalid diagnosticId format:", diagnosticId);
+      return new Response(JSON.stringify({ error: 'Invalid ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate and sanitize all inputs
+    const safeCompanyName = sanitizeForPrompt(validateInput(companyName, 200));
+    const safeIndustry = sanitizeForPrompt(validateInput(industry, 100));
+    const safeStage = sanitizeForPrompt(validateInput(stage, 50));
+    const safeTeamSize = sanitizeForPrompt(validateInput(teamSize, 50));
+    const safeResponses = validateResponses(responses);
+
+    // Ensure required fields are present
+    if (!safeCompanyName || !safeIndustry || !safeStage || !safeTeamSize) {
+      console.error("Missing required fields");
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log("Analyzing diagnostic for:", safeCompanyName);
     
     // Create client with user JWT for RLS enforcement
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -56,13 +111,13 @@ serve(async (req) => {
     const prompt = `You are a startup diagnostic expert. Analyze this startup and provide scores and recommendations.
 
 Startup Details:
-- Company: ${companyName}
-- Industry: ${industry}
-- Stage: ${stage}
-- Team Size: ${teamSize}
+- Company: ${safeCompanyName}
+- Industry: ${safeIndustry}
+- Stage: ${safeStage}
+- Team Size: ${safeTeamSize}
 
 Assessment Responses:
-${JSON.stringify(responses, null, 2)}
+${JSON.stringify(safeResponses, null, 2)}
 
 Provide a comprehensive analysis with:
 1. Scores (0-100) for each of the 8 areas: Market, Product, Business Model, Marketing, Operations, Finance, Team, Legal
@@ -70,6 +125,25 @@ Provide a comprehensive analysis with:
 3. Key strengths and weaknesses for each area
 
 IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
+
+IMPORTANT: In your recommendations, include structured sections with these exact headers (one item per line after each header):
+**Red Flags:**
+- [critical risks or warning signs]
+
+**Green Flags:**
+- [strengths and positive indicators]
+
+**Stop Doing:**
+- [activities to stop immediately]
+
+**Start Doing:**
+- [new activities to begin]
+
+**Fix First:**
+- [urgent priorities to address immediately]
+
+**Fix Later:**
+- [important but can wait]
 
 Respond in JSON format with this structure:
 {
@@ -85,7 +159,7 @@ Respond in JSON format with this structure:
     "overall": number
   },
   "analysis": "Format this with **Market:** analysis... **Product:** analysis... etc. Include **Strengths:** and **Weaknesses:** subsections within each area.",
-  "recommendations": "specific actionable recommendations (this will NOT be shown in PDF, only in consultation)"
+  "recommendations": "Include all the structured sections: Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later with specific actionable items"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
