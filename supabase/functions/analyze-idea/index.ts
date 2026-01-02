@@ -6,6 +6,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per hour per IP
+
+// In-memory rate limit store (resets on function cold start)
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+// Clean old entries periodically to prevent memory leaks
+const cleanupRateLimitStore = () => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (now - value.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
+      rateLimitStore.delete(key);
+    }
+  }
+};
+
+// Get client IP from request headers
+const getClientIP = (req: Request): string => {
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+         req.headers.get('x-real-ip') ||
+         req.headers.get('cf-connecting-ip') ||
+         'unknown';
+};
+
+// Check rate limit and return remaining requests
+const checkRateLimit = (ip: string): { allowed: boolean; remaining: number; resetIn: number } => {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+  
+  // Clean up old entries periodically
+  if (Math.random() < 0.01) cleanupRateLimitStore();
+  
+  if (!record || now - record.windowStart > RATE_LIMIT_WINDOW_MS) {
+    // New window
+    rateLimitStore.set(ip, { count: 1, windowStart: now });
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1, resetIn: RATE_LIMIT_WINDOW_MS };
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    const resetIn = RATE_LIMIT_WINDOW_MS - (now - record.windowStart);
+    return { allowed: false, remaining: 0, resetIn };
+  }
+  
+  record.count++;
+  rateLimitStore.set(ip, record);
+  return { 
+    allowed: true, 
+    remaining: MAX_REQUESTS_PER_WINDOW - record.count, 
+    resetIn: RATE_LIMIT_WINDOW_MS - (now - record.windowStart) 
+  };
+};
+
 // UUID validation regex
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -39,6 +92,33 @@ const validateAreaResponses = (areaResponses: unknown): Record<string, string> =
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Apply rate limiting
+  const clientIP = getClientIP(req);
+  const rateLimit = checkRateLimit(clientIP);
+  
+  console.log(`Rate limit check for IP ${clientIP}: allowed=${rateLimit.allowed}, remaining=${rateLimit.remaining}`);
+  
+  if (!rateLimit.allowed) {
+    const resetMinutes = Math.ceil(rateLimit.resetIn / 60000);
+    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ 
+        error: `Rate limit exceeded. Please try again in ${resetMinutes} minutes.`,
+        retryAfter: Math.ceil(rateLimit.resetIn / 1000)
+      }), 
+      {
+        status: 429,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': String(Math.ceil(rateLimit.resetIn / 1000)),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetIn / 1000))
+        },
+      }
+    );
   }
 
   try {
