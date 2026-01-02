@@ -35,7 +35,7 @@ export type Database = {
           team_score: number | null
           team_size: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           ai_analysis?: string | null
@@ -57,7 +57,7 @@ export type Database = {
           team_score?: number | null
           team_size: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           ai_analysis?: string | null
@@ -79,7 +79,7 @@ export type Database = {
           team_score?: number | null
           team_size?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -134,7 +134,7 @@ export type Database = {
           target_market: string
           team_response: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           ai_analysis?: string | null
@@ -159,7 +159,7 @@ export type Database = {
           target_market: string
           team_response?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           ai_analysis?: string | null
@@ -184,7 +184,7 @@ export type Database = {
           target_market?: string
           team_response?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

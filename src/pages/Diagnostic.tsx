@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,7 +70,6 @@ const QUESTIONS: Record<string, Question[]> = {
 const MAX_WORDS = 50;
 
 const Diagnostic = () => {
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -86,12 +84,6 @@ const Diagnostic = () => {
   
   // Diagnostic responses
   const [responses, setResponses] = useState<Record<string, Record<string, string>>>({});
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
 
   const handleResponseChange = (areaId: string, questionIndex: number, value: string) => {
     setResponses(prev => ({
@@ -123,7 +115,6 @@ const Diagnostic = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
     
     setIsSubmitting(true);
     
@@ -132,7 +123,6 @@ const Diagnostic = () => {
       const { data: diagnostic, error: insertError } = await supabase
         .from('diagnostics')
         .insert({
-          user_id: user.id,
           company_name: companyName,
           industry,
           stage,
@@ -196,14 +186,6 @@ const Diagnostic = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

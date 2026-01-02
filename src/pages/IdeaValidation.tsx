@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +22,6 @@ const operationalAreas = [
 ];
 
 const IdeaValidationPage = () => {
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -44,12 +42,6 @@ const IdeaValidationPage = () => {
     legal: '',
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
   const handleAreaChange = (key: string, value: string) => {
     setAreaResponses(prev => ({ ...prev, [key]: value }));
   };
@@ -59,7 +51,7 @@ const IdeaValidationPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !isFormComplete) return;
+    if (!isFormComplete) return;
     
     setIsSubmitting(true);
     
@@ -68,7 +60,6 @@ const IdeaValidationPage = () => {
       const { data: idea, error: insertError } = await supabase
         .from('idea_validations')
         .insert({
-          user_id: user.id,
           idea_title: ideaTitle,
           idea_description: ideaDescription,
           target_market: areaResponses.market, // Use market response as target market
@@ -140,14 +131,6 @@ const IdeaValidationPage = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
