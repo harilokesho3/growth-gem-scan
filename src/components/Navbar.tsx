@@ -29,11 +29,6 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link to="/auth">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-              Sign In
-            </Button>
-          </Link>
           <Link to="/schedule-demo">
             <Button size="sm" className="gap-2">
               <Monitor className="h-4 w-4" />

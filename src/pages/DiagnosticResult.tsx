@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Download, Calendar, Target, Package, DollarSign, Megaphone, Settings, PiggyBank, Users, Scale, BarChart3, PieChart } from 'lucide-react';
@@ -129,21 +128,15 @@ const AREA_CONFIG = [
 
 const DiagnosticResult = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [diagnostic, setDiagnostic] = useState<DiagnosticData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-      return;
-    }
-
-    if (user && id) {
+    if (id) {
       fetchDiagnostic();
     }
-  }, [user, authLoading, id, navigate]);
+  }, [id]);
 
   const fetchDiagnostic = async () => {
     const { data, error } = await supabase
@@ -161,7 +154,7 @@ const DiagnosticResult = () => {
     setLoading(false);
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
