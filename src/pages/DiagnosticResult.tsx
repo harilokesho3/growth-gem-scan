@@ -12,6 +12,7 @@ import OverallScoreCard from '@/components/results/OverallScoreCard';
 import FeatureDetailCard from '@/components/results/FeatureDetailCard';
 import AIAnalysisContent from '@/components/results/AIAnalysisContent';
 import ActionFramework from '@/components/results/ActionFramework';
+import StrengthsWeaknessesCard from '@/components/results/StrengthsWeaknessesCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DiagnosticData {
@@ -283,6 +284,13 @@ const DiagnosticResult = () => {
               })}
             </div>
           </div>
+          
+          {/* Strengths & Weaknesses Section */}
+          {diagnostic.ai_analysis && (
+            <div className="mb-8">
+              <StrengthsWeaknessesCard analysis={diagnostic.ai_analysis} />
+            </div>
+          )}
           
           {/* AI Analysis Section - Enhanced */}
           {diagnostic.ai_analysis && (
