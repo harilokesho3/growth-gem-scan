@@ -205,53 +205,88 @@ Idea Stage Details:
 `;
     }
 
-    const prompt = `You are a startup idea validation expert. Analyze this business idea and provide scores and recommendations.
+    const prompt = `You are a venture capitalist and startup mentor with 20+ years of experience evaluating thousands of startup ideas. Provide an honest, thorough assessment that will genuinely help this founder.
 
-Idea Details:
-- Title: ${safeIdeaTitle}
-- Description: ${safeIdeaDescription}
-- Target Market: ${safeTargetMarket}
-- Problem Solved: ${safeProblemSolved}
+THE IDEA:
+━━━━━━━━━━━━━━━━━━━━
+Title: ${safeIdeaTitle}
+Description: ${safeIdeaDescription}
+Target Market: ${safeTargetMarket}
+Problem Being Solved: ${safeProblemSolved}
 ${operationalAreasSection}
-Evaluate the idea on:
-1. Feasibility (0-100): How realistic is it to build and launch this?
-2. Innovation (0-100): How unique and differentiated is this idea?
-3. Market Potential (0-100): How large and accessible is the target market?
 
-Consider the operational area responses when evaluating:
-- Market & Product responses inform feasibility and market potential
-- Business Model & Finance responses inform feasibility
-- Marketing & Operations responses inform feasibility
-- Team responses inform overall viability
-- Legal responses inform feasibility and risks
+YOUR TASK:
+Give this founder the kind of feedback a great mentor would give - honest, specific, and actionable. Don't sugarcoat problems, but also don't be discouraging. Help them see clearly what they're working with.
 
-IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
+SCORING CRITERIA:
 
-IMPORTANT: In your recommendations, include structured sections with these exact headers (one item per line after each header):
+**Feasibility (0-100):** Can this actually be built and launched?
+- 80-100: Very achievable with current resources and skills
+- 60-79: Doable but will require some stretching
+- 40-59: Challenging - significant hurdles to overcome
+- 20-39: Difficult - major obstacles in the way
+- 0-19: Extremely risky or nearly impossible
+
+**Innovation (0-100):** How unique and defensible is this?
+- 80-100: Truly novel approach with clear differentiation
+- 60-79: Good twist on existing solutions
+- 40-59: Some differentiation but crowded space
+- 20-39: Similar to many competitors
+- 0-19: Commodity offering with no moat
+
+**Market Potential (0-100):** Is there a real market opportunity?
+- 80-100: Large, growing market with clear demand
+- 60-79: Solid market with room to grow
+- 40-59: Niche market or unproven demand
+- 20-39: Small or shrinking market
+- 0-19: No clear market or heavily commoditized
+
+ANALYSIS FORMAT:
+Write a thorough analysis that includes:
+
+**Strengths:**
+- List 3-5 specific things that make this idea promising
+- Explain WHY each strength gives them an advantage
+- Be honest - only include genuine strengths
+
+**Weaknesses:**
+- List 3-5 specific challenges or concerns
+- Explain the REAL IMPACT of each weakness
+- Don't be harsh, but be truthful
+
+**The Opportunity:**
+Write 2-3 sentences about what's genuinely exciting about this idea and where the biggest opportunity lies.
+
+**The Challenge:**
+Write 2-3 sentences about the biggest obstacles they'll face and what could go wrong.
+
+**Reality Check:**
+One honest paragraph giving your gut assessment - would you advise a friend to pursue this? Why or why not?
+
+RECOMMENDATIONS FORMAT:
+Provide practical next steps:
+
 **Red Flags:**
-- [critical risks or warning signs]
+- Serious concerns that need addressing (be specific about the risk)
 
-**Green Flags:**
-- [strengths and positive indicators]
+**Green Flags:**  
+- Positive signals that suggest this could work
 
 **Stop Doing:**
-- [activities to stop immediately]
+- Common mistakes founders make with ideas like this
 
 **Start Doing:**
-- [new activities to begin]
+- Immediate actions that would validate or improve the idea
 
-**Fix First:**
-- [urgent priorities to address immediately]
+**Fix First (This Week):**
+- Most urgent gaps to address
 
-**Fix Later:**
-- [important but can wait]
+**Fix Later (This Month):**
+- Important but less time-sensitive improvements
 
-Provide:
-- Scores for each dimension
-- An overall viability score
-- Strengths and weaknesses
+Write in plain language like you're having coffee with the founder. Be direct, specific, and genuinely helpful.
 
-Respond in JSON format with this structure:
+Respond in JSON format:
 {
   "scores": {
     "feasibility": number,
@@ -259,8 +294,8 @@ Respond in JSON format with this structure:
     "marketPotential": number,
     "overall": number
   },
-  "analysis": "Include **Strengths:** section listing key strengths, then **Weaknesses:** section listing key challenges based on all provided information",
-  "recommendations": "Include all the structured sections: Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later with specific actionable items"
+  "analysis": "Your detailed analysis with **Strengths:** and **Weaknesses:** sections, plus 'The Opportunity', 'The Challenge', and 'Reality Check' paragraphs",
+  "recommendations": "Your actionable recommendations with Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later sections"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -272,7 +307,7 @@ Respond in JSON format with this structure:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are an expert startup advisor and idea validation specialist. Always respond with valid JSON." },
+          { role: "system", content: "You are a legendary startup mentor known for your honest, insightful feedback. You've helped launch hundreds of successful startups and you genuinely care about founders. You speak plainly without buzzwords, give specific actionable advice, and aren't afraid to point out problems while remaining encouraging. Your goal is to help founders see their idea clearly - both the opportunities and the challenges. Always respond with valid JSON." },
           { role: "user", content: prompt }
         ],
       }),

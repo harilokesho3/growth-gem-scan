@@ -188,44 +188,73 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const prompt = `You are a startup diagnostic expert. Analyze this startup and provide scores and recommendations.
+    const prompt = `You are a seasoned startup advisor with 20+ years of experience helping founders build successful companies. Analyze this startup thoroughly and provide actionable insights.
 
-Startup Details:
-- Company: ${safeCompanyName}
-- Industry: ${safeIndustry}
-- Stage: ${safeStage}
-- Team Size: ${safeTeamSize}
+STARTUP PROFILE:
+━━━━━━━━━━━━━━━━━━━━
+Company Name: ${safeCompanyName}
+Industry: ${safeIndustry}
+Current Stage: ${safeStage}
+Team Size: ${safeTeamSize}
 
-Assessment Responses:
+FOUNDER'S RESPONSES:
 ${JSON.stringify(safeResponses, null, 2)}
 
-Provide a comprehensive analysis with:
-1. Scores (0-100) for each of the 8 areas: Market, Product, Business Model, Marketing, Operations, Finance, Team, Legal
-2. An overall score
-3. Key strengths and weaknesses for each area
+YOUR TASK:
+Provide a deep, insightful analysis that a founder can actually use. Write like you're talking to the founder directly - be honest, specific, and practical. Avoid generic startup advice.
 
-IMPORTANT: Structure your analysis with clear **Strengths:** and **Weaknesses:** sections so they can be extracted for the PDF report.
+SCORING GUIDELINES (0-100):
+- 80-100: Excellent - This area is a competitive advantage
+- 60-79: Good - Solid foundation but room for improvement  
+- 40-59: Needs Work - Significant gaps that could hurt growth
+- 20-39: Critical - Major issues requiring immediate attention
+- 0-19: Crisis - This could kill the business
 
-IMPORTANT: In your recommendations, include structured sections with these exact headers (one item per line after each header):
+Score each of these 8 areas: Market, Product, Business Model, Marketing, Operations, Finance, Team, Legal
+
+ANALYSIS FORMAT:
+Write a comprehensive analysis that includes:
+
+**Strengths:**
+- List 3-5 specific things this startup is doing well
+- Explain WHY each strength matters for their success
+- Be specific to their situation, not generic
+
+**Weaknesses:**
+- List 3-5 specific challenges or gaps
+- Explain the IMPACT of each weakness on their business
+- Prioritize by severity
+
+**What's Working:**
+A brief paragraph explaining what the founder should keep doing and why it's working.
+
+**What Needs Attention:**
+A brief paragraph on the most critical areas to address, written in plain language.
+
+RECOMMENDATIONS FORMAT:
+Provide actionable next steps organized as:
+
 **Red Flags:**
-- [critical risks or warning signs]
+- Critical risks that could seriously harm the business (be specific)
 
 **Green Flags:**
-- [strengths and positive indicators]
+- Positive indicators showing momentum or potential
 
 **Stop Doing:**
-- [activities to stop immediately]
+- Activities that are wasting time, money, or focus
 
 **Start Doing:**
-- [new activities to begin]
+- New actions that would move the needle
 
-**Fix First:**
-- [urgent priorities to address immediately]
+**Fix First (This Week):**
+- Urgent items to tackle immediately
 
-**Fix Later:**
-- [important but can wait]
+**Fix Later (This Month):**
+- Important but less urgent improvements
 
-Respond in JSON format with this structure:
+Write everything in clear, conversational language. Avoid jargon. Be direct and helpful.
+
+Respond in JSON format:
 {
   "scores": {
     "market": number,
@@ -238,8 +267,8 @@ Respond in JSON format with this structure:
     "legal": number,
     "overall": number
   },
-  "analysis": "Format this with **Market:** analysis... **Product:** analysis... etc. Include **Strengths:** and **Weaknesses:** subsections within each area.",
-  "recommendations": "Include all the structured sections: Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later with specific actionable items"
+  "analysis": "Your detailed analysis with **Strengths:** and **Weaknesses:** sections, plus 'What's Working' and 'What Needs Attention' paragraphs",
+  "recommendations": "Your actionable recommendations with Red Flags, Green Flags, Stop Doing, Start Doing, Fix First, Fix Later sections"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -251,7 +280,7 @@ Respond in JSON format with this structure:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are an expert startup advisor and diagnostic specialist. Always respond with valid JSON." },
+          { role: "system", content: "You are a world-class startup advisor known for giving brutally honest yet constructive feedback. You speak directly to founders in plain English, avoiding buzzwords and corporate speak. Your insights are specific, actionable, and based on real-world experience. You care deeply about helping founders succeed. Always respond with valid JSON." },
           { role: "user", content: prompt }
         ],
       }),
