@@ -135,23 +135,87 @@ const addScoreBar = (doc: jsPDF, label: string, score: number, x: number, y: num
 };
 
 // Helper to extract strengths and weaknesses from AI analysis
-const extractStrengthsAndWeaknesses = (analysis: string | null): { strengths: string; weaknesses: string } => {
+const extractStrengthsAndWeaknesses = (analysis: string | null): { strengths: string[]; weaknesses: string[] } => {
   if (!analysis) {
-    return { strengths: 'Analysis not available', weaknesses: 'Analysis not available' };
+    return { strengths: ['Analysis not available'], weaknesses: ['Analysis not available'] };
   }
   
-  // Try to find strengths section
-  const strengthsMatch = analysis.match(/\*\*Strengths?:\*\*\s*([\s\S]*?)(?=\*\*|$)/i) ||
-    analysis.match(/Strengths?:\s*([\s\S]*?)(?=Weakness|$)/i);
+  // Try to find strengths section with various formats
+  const strengthsMatch = analysis.match(/\*\*Strengths?:?\*\*\s*([\s\S]*?)(?=\*\*Weakness|\*\*Areas|$)/i) ||
+    analysis.match(/Strengths?:?\s*([\s\S]*?)(?=Weakness|Areas for|$)/i) ||
+    analysis.match(/(?:Key\s+)?Strengths?:?\s*([\s\S]*?)(?=Weakness|$)/i);
   
-  // Try to find weaknesses section
-  const weaknessesMatch = analysis.match(/\*\*Weakness(?:es)?:\*\*\s*([\s\S]*?)(?=\*\*|$)/i) ||
-    analysis.match(/Weakness(?:es)?:\s*([\s\S]*?)(?=Recommendation|Next|$)/i);
+  // Try to find weaknesses section with various formats
+  const weaknessesMatch = analysis.match(/\*\*(?:Weakness(?:es)?|Areas for Improvement):?\*\*\s*([\s\S]*?)(?=\*\*Recommendation|\*\*Next|\*\*Action|$)/i) ||
+    analysis.match(/(?:Weakness(?:es)?|Areas for Improvement):?\s*([\s\S]*?)(?=Recommendation|Next Steps|Action|$)/i);
   
-  const strengths = strengthsMatch ? strengthsMatch[1].trim() : 'See analysis for details';
-  const weaknesses = weaknessesMatch ? weaknessesMatch[1].trim() : 'See analysis for details';
+  const parseItems = (text: string | undefined): string[] => {
+    if (!text) return ['See analysis for details'];
+    
+    // Split by common list patterns
+    const items = text
+      .split(/(?:\n[-•*]|\n\d+\.|\n-\s)/)
+      .map(item => item.replace(/^[-•*\d.)\s]+/, '').trim())
+      .filter(item => item.length > 5 && item.length < 500);
+    
+    if (items.length > 0) return items.slice(0, 5);
+    
+    // If no list items found, split by sentences
+    const sentences = text
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 10 && s.length < 300);
+    
+    return sentences.length > 0 ? sentences.slice(0, 5) : ['See analysis for details'];
+  };
   
-  return { strengths, weaknesses };
+  return {
+    strengths: parseItems(strengthsMatch?.[1]),
+    weaknesses: parseItems(weaknessesMatch?.[1])
+  };
+};
+
+// Helper to add a bullet list section to PDF
+const addBulletListSection = (doc: jsPDF, title: string, items: string[], startY: number, color: [number, number, number]): number => {
+  doc.setTextColor(...COLORS.dark);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, 20, startY);
+  
+  doc.setDrawColor(...color);
+  doc.setLineWidth(0.5);
+  doc.line(20, startY + 2, 60, startY + 2);
+  
+  let currentY = startY + 12;
+  
+  doc.setTextColor(...COLORS.gray);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  for (const item of items) {
+    if (currentY > 270) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    // Draw bullet point
+    doc.setFillColor(...color);
+    doc.circle(24, currentY - 1.5, 1.5, 'F');
+    
+    // Wrap text for long items
+    const lines = doc.splitTextToSize(item, 160);
+    for (const line of lines) {
+      if (currentY > 270) {
+        doc.addPage();
+        currentY = 20;
+      }
+      doc.text(line, 30, currentY);
+      currentY += 5;
+    }
+    currentY += 3;
+  }
+  
+  return currentY + 5;
 };
 
 export const generateDiagnosticPdf = (data: DiagnosticPdfData) => {
@@ -211,8 +275,8 @@ export const generateDiagnosticPdf = (data: DiagnosticPdfData) => {
   // Strengths & Weaknesses (extracted from AI Analysis)
   const { strengths, weaknesses } = extractStrengthsAndWeaknesses(data.ai_analysis);
   
-  scoreY = addSection(doc, 'Strengths', strengths, scoreY);
-  addSection(doc, 'Weaknesses', weaknesses, scoreY);
+  scoreY = addBulletListSection(doc, 'Strengths', strengths, scoreY, COLORS.green);
+  addBulletListSection(doc, 'Weaknesses', weaknesses, scoreY, COLORS.red);
   
   // Footer
   const pageCount = doc.getNumberOfPages();
@@ -285,8 +349,8 @@ export const generateIdeaPdf = (data: IdeaPdfData) => {
   // Strengths & Weaknesses (extracted from AI Analysis)
   const { strengths, weaknesses } = extractStrengthsAndWeaknesses(data.ai_analysis);
   
-  currentY = addSection(doc, 'Strengths', strengths, currentY);
-  addSection(doc, 'Weaknesses', weaknesses, currentY);
+  currentY = addBulletListSection(doc, 'Strengths', strengths, currentY, COLORS.green);
+  addBulletListSection(doc, 'Weaknesses', weaknesses, currentY, COLORS.red);
   
   // Footer
   const pageCount = doc.getNumberOfPages();

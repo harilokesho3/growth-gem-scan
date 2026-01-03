@@ -12,6 +12,7 @@ import OverallScoreCard from '@/components/results/OverallScoreCard';
 import FeatureDetailCard from '@/components/results/FeatureDetailCard';
 import AIAnalysisContent from '@/components/results/AIAnalysisContent';
 import ActionFramework from '@/components/results/ActionFramework';
+import StrengthsWeaknessesCard from '@/components/results/StrengthsWeaknessesCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface IdeaData {
@@ -327,6 +328,13 @@ const IdeaResult = () => {
               })}
             </div>
           </div>
+          
+          {/* Strengths & Weaknesses Section */}
+          {idea.ai_analysis && (
+            <div className="mb-8">
+              <StrengthsWeaknessesCard analysis={idea.ai_analysis} />
+            </div>
+          )}
           
           {/* AI Analysis Section - Enhanced */}
           {idea.ai_analysis && (
