@@ -1,1 +1,10 @@
 project_id = "umsvypkxbjsdxvvtngsa"
+
+[functions.analyze-diagnostic]
+verify_jwt = false
+
+[functions.analyze-idea]
+verify_jwt = false
+
+[functions.analyze-website]
+verify_jwt = false

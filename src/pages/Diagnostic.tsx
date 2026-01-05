@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, Scan, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Scan, Loader2, Globe, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 
@@ -75,6 +75,8 @@ const Diagnostic = () => {
   
   const [step, setStep] = useState(0); // 0 = company info, 1-8 = diagnostic areas
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAnalyzingWebsite, setIsAnalyzingWebsite] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState('');
   
   // Company info
   const [companyName, setCompanyName] = useState('');
@@ -84,6 +86,66 @@ const Diagnostic = () => {
   
   // Diagnostic responses
   const [responses, setResponses] = useState<Record<string, Record<string, string>>>({});
+
+  const handleAnalyzeWebsite = async () => {
+    if (!websiteUrl.trim()) {
+      toast({
+        title: 'Enter a URL',
+        description: 'Please enter your startup website URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAnalyzingWebsite(true);
+    
+    try {
+      toast({
+        title: 'Analyzing Website',
+        description: 'Scraping and analyzing your website content...',
+      });
+
+      const { data, error } = await supabase.functions.invoke('analyze-website', {
+        body: { websiteUrl: websiteUrl.trim() },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to analyze website');
+      }
+
+      const { companyInfo, responses: extractedResponses } = data.data;
+
+      // Fill company info
+      if (companyInfo.companyName) setCompanyName(companyInfo.companyName);
+      if (companyInfo.industry) setIndustry(companyInfo.industry);
+      if (companyInfo.stage) setStage(companyInfo.stage);
+      if (companyInfo.teamSize) setTeamSize(companyInfo.teamSize);
+
+      // Fill diagnostic responses
+      if (extractedResponses) {
+        setResponses(extractedResponses);
+      }
+
+      toast({
+        title: 'Website Analyzed!',
+        description: 'Form has been filled with extracted data. Review and submit when ready.',
+      });
+
+    } catch (error: any) {
+      console.error('Website analysis error:', error);
+      toast({
+        title: 'Analysis Failed',
+        description: error.message || 'Could not analyze the website. Please fill the form manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAnalyzingWebsite(false);
+    }
+  };
 
   const handleResponseChange = (areaId: string, questionIndex: number, value: string) => {
     setResponses(prev => ({
@@ -221,6 +283,53 @@ const Diagnostic = () => {
                   <div>
                     <h1 className="font-display text-2xl font-bold">Startup Information</h1>
                     <p className="text-muted-foreground">Tell us about your startup</p>
+                  </div>
+                </div>
+
+                {/* Website Auto-Fill Section */}
+                <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Globe className="h-5 w-5 text-primary" />
+                    <span className="font-medium text-sm">Quick Fill from Website</span>
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">AI Powered</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Paste your startup's website URL and we'll automatically analyze it to fill the diagnostic form.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="https://yourstartup.com"
+                      value={websiteUrl}
+                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      disabled={isAnalyzingWebsite}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={handleAnalyzeWebsite}
+                      disabled={isAnalyzingWebsite || !websiteUrl.trim()}
+                      className="shrink-0"
+                    >
+                      {isAnalyzingWebsite ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Analyze
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or fill manually</span>
                   </div>
                 </div>
                 
