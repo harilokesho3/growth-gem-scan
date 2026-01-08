@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ArrowRight, Scan, Loader2, Globe, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
 const DIAGNOSTIC_AREAS = [
   { id: 'market', name: 'Market', description: 'Market size, competition, and positioning' },
@@ -72,6 +73,7 @@ const MAX_WORDS = 50;
 const Diagnostic = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   
   const [step, setStep] = useState(0); // 0 = company info, 1-8 = diagnostic areas
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,6 +88,18 @@ const Diagnostic = () => {
   
   // Diagnostic responses
   const [responses, setResponses] = useState<Record<string, Record<string, string>>>({});
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to access the diagnostic tool.',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+    }
+  }, [user, loading, navigate, toast]);
 
   const handleAnalyzeWebsite = async () => {
     if (!websiteUrl.trim()) {
@@ -177,11 +191,20 @@ const Diagnostic = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to submit a diagnostic.',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // Create the diagnostic record
+      // Create the diagnostic record with user_id
       const { data: diagnostic, error: insertError } = await supabase
         .from('diagnostics')
         .insert({
@@ -190,6 +213,7 @@ const Diagnostic = () => {
           stage,
           team_size: teamSize,
           status: 'analyzing',
+          user_id: user.id,
         })
         .select()
         .single();
@@ -248,6 +272,20 @@ const Diagnostic = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
