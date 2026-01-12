@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Lightbulb, Loader2, ArrowRight, Target, Package, DollarSign, Megaphone, Settings, PiggyBank, Users, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import { useAuth } from '@/hooks/useAuth';
 
 const operationalAreas = [
   { key: 'market', label: 'Market', icon: Target, placeholder: 'Who is your target customer? Describe their demographics, behaviors, and pain points.' },
@@ -25,7 +24,6 @@ const operationalAreas = [
 const IdeaValidationPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading } = useAuth();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ideaTitle, setIdeaTitle] = useState('');
@@ -44,17 +42,6 @@ const IdeaValidationPage = () => {
     legal: '',
   });
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to validate your idea.',
-        variant: 'destructive',
-      });
-      navigate('/auth');
-    }
-  }, [user, loading, navigate, toast]);
 
   const handleAreaChange = (key: string, value: string) => {
     setAreaResponses(prev => ({ ...prev, [key]: value }));
@@ -66,16 +53,6 @@ const IdeaValidationPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormComplete) return;
-    
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to validate your idea.',
-        variant: 'destructive',
-      });
-      navigate('/auth');
-      return;
-    }
     
     setIsSubmitting(true);
     
@@ -97,7 +74,6 @@ const IdeaValidationPage = () => {
           team_response: areaResponses.team,
           legal_response: areaResponses.legal,
           status: 'analyzing',
-          user_id: user.id,
         })
         .select()
         .single();
@@ -157,19 +133,6 @@ const IdeaValidationPage = () => {
     }
   };
 
-  // Show loading while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Don't render if not authenticated (will redirect)
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background">
